@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Analista de Casos</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font:14px Segoe UI,sans-serif;background:#f4f6f9;color:#1d2733}
+.hide{display:none!important}input,select,textarea,button{width:100%;padding:8px;margin:3px 0;border:1px solid #cfd6df;border-radius:6px;font:inherit}
+button{background:#0c2d5a;color:#fff;border:0;cursor:pointer}button:hover{background:#00796b}.sm{width:auto;padding:3px 8px;font-size:12px}
+#login{max-width:360px;margin:12vh auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 20px #0002}
+#app{display:flex;height:100vh}aside{width:280px;background:#0c2d5a;color:#fff;padding:14px;overflow:auto}
+aside h4{margin:14px 0 4px;color:#80cbc4}.case{background:#1a3f73;text-align:left}.case.on{background:#00796b}
+main{flex:1;padding:18px;overflow:auto}nav{display:flex;gap:6px;margin:10px 0}nav button{width:auto}
+#chat{background:#fff;border-radius:8px;padding:10px;height:48vh;overflow:auto}
+.msg{padding:10px;border-radius:8px;margin:6px 0;white-space:pre-wrap}.u{background:#e3f2fd}.ia{background:#f1f3f5}
+.src button{display:block;width:auto;background:none;color:#00796b;padding:2px 0;text-align:left;text-decoration:underline}
+.src pre{white-space:pre-wrap;font-size:11px;background:#fff;padding:6px;max-height:150px;overflow:auto}
+#fileList div{display:flex;justify-content:space-between;background:#fff;padding:5px 8px;margin:2px 0;border-radius:5px}
+#accBox label{display:inline-block;margin-right:12px}canvas{width:100%;max-width:640px;border-radius:8px;margin-top:8px}
+#st{font-size:12px;color:#00796b;margin:4px 0}#svg{background:#fff;padding:10px;border-radius:8px;overflow:auto}
+</style></head><body>
+
+<div id="login"><h2>🔒 Analista de Casos</h2><p id="lhint" style="font-size:12px"></p>
+<input id="em" placeholder="E-mail"><input id="pw" type="password" placeholder="Senha"><button id="bLogin">Entrar</button></div>
+
+<div id="app" class="hide">
+<aside>
+ <b id="who"></b> <button id="bOut" class="sm">Sair</button>
+ <h4>🧠 Modelo de IA</h4>
+ <select id="model">
+  <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 1.5B (leve – recomendado)</option>
+  <option value="Qwen2.5-1.5B-Instruct-q4f32_1-MLC">Qwen 1.5B (compatibilidade)</option>
+  <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">Qwen 3B (melhor, mais pesado)</option>
+  <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B</option>
+ </select><button id="bLoad">Carregar IA</button>
+ <h4>📁 Casos</h4><div id="caseList"></div>
+ <div class="own"><input id="nc" placeholder="Nome do novo caso"><button id="bCase">+ Criar caso</button></div>
+ <div class="own"><h4>👥 Equipe</h4><input id="ne" placeholder="E-mail do funcionário"><input id="np" type="password" placeholder="Senha inicial">
+  <button id="bUser">+ Adicionar funcionário</button><div id="userList"></div></div>
+ <h4>🔁 Compartilhar caso</h4><button id="bExp">Exportar (criptografado)</button><button id="bImp">Importar .caso</button>
+ <input type="file" id="imp" accept=".caso" class="hide">
+</aside>
+<main>
+ <div id="st"></div><h2 id="cTitle">Selecione ou crie um caso</h2>
+ <div id="caseArea" class="hide">
+  <label>📎 Anexar arquivos (PDF, DOCX, XLSX, CSV, imagens, TXT):</label><input type="file" id="up" multiple>
+  <div id="fileList"></div><div id="accBox" class="own"></div>
+  <nav><button data-t="tChat">💬 Conversar com arquivos</button><button data-t="tFlow">🔀 Fluxograma</button><button data-t="tVid">🎬 Vídeo</button></nav>
+  <section id="tChat"><div id="chat"></div><textarea id="q" rows="3" placeholder="Pergunte sobre os arquivos deste caso..."></textarea><button id="bAsk">Perguntar</button></section>
+  <section id="tFlow" class="hide"><textarea id="ft" rows="4" placeholder="Descreva o fluxo (vazio = usar os arquivos do caso)"></textarea>
+   <button id="bFlow">Gerar fluxograma</button><textarea id="mm" rows="6" placeholder="Código Mermaid (editável)"></textarea>
+   <button id="bRender">Atualizar desenho</button><div id="svg"></div><button id="bSvg">⬇ Baixar SVG</button></section>
+  <section id="tVid" class="hide"><textarea id="vt" rows="6" placeholder="Cole o texto da apresentação"></textarea>
+   <button id="bVid">Gerar vídeo corporativo</button><canvas id="cv" width="1280" height="720"></canvas><p><a id="dl"></a></p></section>
+ </div>
+</main></div>
+
+<script type="module">
+import * as pdfjs from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+pdfjs.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
+mermaid.initialize({startOnLoad:false,securityLevel:"strict"});
+const $=id=>document.getElementById(id), el=(t,x)=>{const e=document.createElement(t);if(x!=null)e.textContent=x;return e};
+const st=t=>$("st").textContent=t;
+if(!navigator.gpu) st("⚠️ WebGPU indisponível neste navegador – a IA não poderá rodar.");
+
+// ---------- Banco local (IndexedDB) ----------
+const idb=await new Promise(r=>{const q=indexedDB.open("analista",1);q.onupgradeneeded=()=>q.result.createObjectStore("kv");q.onsuccess=()=>r(q.result)});
+const get=k=>new Promise(r=>{const q=idb.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>r(q.result)});
+const set=(k,v)=>new Promise(r=>{const t=idb.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=r});
+const del=k=>new Promise(r=>{const t=idb.transaction("kv","readwrite");t.objectStore("kv").delete(k);t.oncomplete=r});
+const users=async()=>await get("users")||[], cases=async()=>await get("cases")||[];
+
+// ---------- Login / usuários ----------
+async function hash(pw,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveBits"]);
+ const b=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:200000,hash:"SHA-256"},k,256);
+ return btoa(String.fromCharCode(...new Uint8Array(b)))}
+let me=null,cur=null,eng=null;
+(await users()).length||($("lhint").textContent="Primeiro acesso: o e-mail e senha informados serão do DONO.");
+$("bLogin").onclick=async()=>{let us=await users();const e=$("em").value.trim().toLowerCase(),p=$("pw").value;if(!e||!p)return;
+ if(!us.length){const salt=crypto.randomUUID();us=[{email:e,salt,hash:await hash(p,salt),role:"owner",active:true}];await set("users",us)}
+ const u=us.find(x=>x.email===e&&x.active);if(!u||await hash(p,u.salt)!==u.hash)return alert("Login inválido ou acesso removido");
+ me=u;$("pw").value="";$("login").classList.add("hide");$("app").classList.remove("hide");
+ $("who").textContent=`👤 ${u.email} (${u.role==="owner"?"Dono":"Funcionário"})`;
+ document.querySelectorAll(".own").forEach(x=>x.classList.toggle("hide",u.role!=="owner"));renderCases();renderUsers()};
+$("bOut").onclick=()=>location.reload();
+$("bUser").onclick=async()=>{const us=await users(),e=$("ne").value.trim().toLowerCase(),p=$("np").value;
+ if(!e||!p||us.some(u=>u.email===e))return alert("Dados inválidos ou usuário já existe");
+ const salt=crypto.randomUUID();us.push({email:e,salt,hash:await hash(p,salt),role:"employee",active:true});await set("users",us);
+ $("ne").value=$("np").value="";renderUsers();renderAccess()};
+async function renderUsers(){if(me.role!=="owner")return;const us=await users();
+ $("userList").replaceChildren(...us.filter(u=>u.role!=="owner").map(u=>{const d=el("div",(u.active?"🟢 ":"🔴 ")+u.email+" ");
+  const b=el("button",u.active?"Remover acesso":"Reativar");b.className="sm";b.onclick=async()=>{u.active=!u.active;await set("users",us);renderUsers()};d.append(b);return d}))}
+
+// ---------- Casos ----------
+$("bCase").onclick=async()=>{const n=$("nc").value.trim();if(!n)return;const cs=await cases(),id=crypto.randomUUID();
+ cs.push({id,name:n,access:[]});await set("cases",cs);$("nc").value="";openCase(id)};
+async function renderCases(){const cs=(await cases()).filter(c=>me.role==="owner"||c.access.includes(me.email));
+ $("caseList").replaceChildren(...cs.map(c=>{const b=el("button","📁 "+c.name);b.className="case"+(c.id===cur?" on":"");b.onclick=()=>openCase(c.id);return b}))}
+async function openCase(id){cur=id;const c=(await cases()).find(x=>x.id===id);$("cTitle").textContent="📁 "+c.name;
+ $("caseArea").classList.remove("hide");$("chat").innerHTML="";renderCases();renderFiles();renderAccess()}
+async function renderAccess(){if(me.role!=="owner"||!cur)return;const cs=await cases(),c=cs.find(x=>x.id===cur),us=(await users()).filter(u=>u.role!=="owner");
+ const box=$("accBox");box.replaceChildren(el("b","🔐 Quem acessa este caso: "));
+ us.forEach(u=>{const l=el("label"),cb=el("input");cb.type="checkbox";cb.style.width="auto";cb.checked=c.access.includes(u.email);
+  cb.onchange=async()=>{c.access=cb.checked?[...c.access,u.email]:c.access.filter(x=>x!==u.email);await set("cases",cs)};l.append(cb," "+u.email);box.append(l)})}
+
+// ---------- Extração ----------
+const ocr=async src=>(await Tesseract.recognize(src,"por")).data.text;
+function split(t,loc,page,out,num){const S=1500;for(let i=0,k=1;i<t.length;i+=S-200,k++)out.push({t:t.slice(i,i+S),loc:num?`${loc} ${k}`:loc,page})}
+async function extract(f){const n=f.name.toLowerCase(),out=[];
+ if(n.endsWith(".pdf")){const pdf=await pdfjs.getDocument({data:await f.arrayBuffer()}).promise;
+  for(let i=1;i<=pdf.numPages;i++){st(`${f.name}: página ${i}/${pdf.numPages}`);const p=await pdf.getPage(i);
+   let t=(await p.getTextContent()).items.map(x=>x.str).join(" ");
+   if(t.trim().length<30){const v=p.getViewport({scale:2}),c=el("canvas");c.width=v.width;c.height=v.height;
+    await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;t=await ocr(c)}
+   split(t,`página ${i}`,i,out)}}
+ else if(/\.(xlsx|xlsm|xls|csv)$/.test(n)){const wb=XLSX.read(await f.arrayBuffer());
+  for(const s of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[s],{header:1,raw:false,defval:""}),h=rows[0]||[];
+   for(let i=1;i<rows.length;i+=25){const blk=rows.slice(i,i+25).map((r,j)=>`Linha ${i+j+1}: `+r.map((v,k)=>v!==""?`${h[k]||"Col"+(k+1)}=${v}`:"").filter(Boolean).join("; ")).join("\n");
+    out.push({t:`Aba ${s}\n${blk}`,loc:`aba "${s}" linhas ${i+1}-${Math.min(i+25,rows.length)}`,page:1})}}}
+ else if(n.endsWith(".docx"))split((await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value,"trecho",1,out,true);
+ else if(/\.(png|jpe?g|webp|bmp)$/.test(n))split(await ocr(f),"imagem",1,out);
+ else split(await f.text(),"trecho",1,out,true);
+ return out}
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+$("up").onchange=async e=>{const fl=await get("files:"+cur)||[];
+ for(const f of e.target.files){st(`Lendo ${f.name}...`);const id=crypto.randomUUID();
+  const ch=(await extract(f)).filter(c=>c.t.trim()).map(c=>({...c,n:norm(c.t)}));
+  await set("blob:"+id,f);fl.push({id,name:f.name,chunks:ch});await set("files:"+cur,fl)}
+ e.target.value="";st("✅ Arquivos processados");renderFiles()};
+async function renderFiles(){const fl=await get("files:"+cur)||[];
+ $("fileList").replaceChildren(...fl.map(f=>{const d=el("div"),a=el("button","📄 "+f.name);a.className="sm";a.onclick=()=>openFile(f.id,1);d.append(a);
+  if(me.role==="owner"){const x=el("button","🗑");x.className="sm";x.onclick=async()=>{if(!confirm("Excluir "+f.name+"?"))return;
+   await del("blob:"+f.id);await set("files:"+cur,fl.filter(y=>y.id!==f.id));renderFiles()};d.append(x)}return d}))}
+async function openFile(id,page){const b=await get("blob:"+id);window.open(URL.createObjectURL(b)+(page>1?"#page="+page:""),"_blank")}
+
+// ---------- Busca (somente nos arquivos do caso) ----------
+const STOP=new Set("a o e de da do das dos em para com que qual quais um uma os as no na nos nas por se ao sobre como".split(" "));
+function search(q,ch,k=5){const ts=norm(q).split(/[^a-z0-9.,/-]+/).filter(w=>w.length>2&&!STOP.has(w)),N=ch.length,df={};
+ ts.forEach(w=>df[w]=ch.filter(c=>c.n.includes(w)).length);
+ return ch.map(c=>({c,s:ts.reduce((a,w)=>{const tf=c.n.split(w).length-1;return a+(tf?Math.log(1+N/(df[w]||1))*tf/(tf+1.2):0)},0)}))
+  .filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,k).map(x=>x.c)}
+
+// ---------- IA local (WebGPU) ----------
+$("model").onchange=()=>{eng=null};
+async function llm(){if(!eng)eng=await webllm.CreateMLCEngine($("model").value,{initProgressCallback:p=>st("🧠 "+p.text)});st("🧠 IA pronta");return eng}
+$("bLoad").onclick=()=>llm().catch(e=>st("Erro: "+e.message+" – tente o modelo 'compatibilidade'"));
+async function ask(m){const e=await llm();return(await e.chat.completions.create({messages:m,temperature:0})).choices[0].message.content}
+
+// ---------- Chat com arquivos ----------
+const SYS=`Você é analista especialista em contratos de saúde pública (Lei 14.133/2021, Lei 8.080/1990, contratos de gestão com OS, convênios SUS, cronogramas físico-financeiros, fluxos assistenciais).
+REGRAS: 1) Use SOMENTE os TRECHOS fornecidos; nunca conhecimento externo. 2) Se a resposta não estiver nos trechos, responda: "Não encontrei essa informação nos arquivos do caso." 3) Cite a fonte de cada afirmação como [n]. 4) Copie números, datas e valores EXATAMENTE como aparecem. 5) Quando relevante, aponte prazos, multas, metas, obrigações e inconsistências. Responda em português.`;
+function msg(c,t){const d=el("div");d.className="msg "+c;d.append(el("span",t));$("chat").append(d);$("chat").scrollTop=1e9;return d}
+$("bAsk").onclick=async()=>{const q=$("q").value.trim();if(!q)return;$("q").value="";msg("u",q);
+ const fl=await get("files:"+cur)||[],all=fl.flatMap(f=>f.chunks.map(c=>({...c,fid:f.id,file:f.name}))),hits=search(q,all);
+ if(!hits.length)return msg("ia","Não encontrei essa informação nos arquivos do caso.");
+ const d=msg("ia","⏳ Analisando os arquivos...");
+ try{const a=await ask([{role:"system",content:SYS},{role:"user",content:"TRECHOS:\n"+hits.map((h,i)=>`[${i+1}] (${h.file} – ${h.loc})\n${h.t}`).join("\n\n")+"\n\nPERGUNTA: "+q}]);
+  d.firstChild.textContent=a;let used=hits.filter((_,i)=>a.includes(`[${i+1}]`));if(!used.length)used=hits;
+  const s=el("div");s.className="src";s.append(el("b","Fontes:"));
+  used.forEach(h=>{const n=hits.indexOf(h)+1,b=el("button",`📄 [${n}] ${h.file} – ${h.loc}`);b.onclick=()=>openFile(h.fid,h.page);
+   const det=el("details");det.append(el("summary","ver trecho original"),el("pre",h.t));s.append(b,det)});d.append(s)}
+ catch(e){d.firstChild.textContent="Erro na IA: "+e.message}};
+$("q").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("bAsk").click()}};
+
+// ---------- Fluxograma ----------
+$("bFlow").onclick=async()=>{let src=$("ft").value.trim();
+ if(!src)src=((await get("files:"+cur))||[]).flatMap(f=>f.chunks).map(c=>c.t).join("\n").slice(0,5000);
+ st("Gerando fluxograma...");const r=await ask([{role:"user",content:`Converta o conteúdo em fluxograma Mermaid "flowchart TD". Use somente o conteúdo. Rótulos curtos entre aspas, ex: A["Início"] --> B{"Aprovado?"}. Responda APENAS o código.\n\n${src}`}]);
+ $("mm").value=r.replace(/```(mermaid)?/g,"").trim();render();st("")};
+async function render(){try{$("svg").innerHTML=(await mermaid.render("g"+Date.now(),$("mm").value)).svg}catch{$("svg").textContent="Código Mermaid inválido – ajuste e clique em Atualizar."}}
+$("bRender").onclick=render;
+$("bSvg").onclick=()=>{const a=el("a");a.href=URL.createObjectURL(new Blob([$("svg").innerHTML],{type:"image/svg+xml"}));a.download="fluxo.svg";a.click()};
+
+// ---------- Vídeo corporativo ----------
+function wrap(g,s,x,y,w,lh){let l="";for(const p of s.split(" ")){if(g.measureText(l+p).width>w){g.fillText(l,x,y);y+=lh;l=""}l+=p+" "}g.fillText(l,x,y)}
+function draw(g,t,n,i,tot,p){const W=1280,H=720,gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,"#0c2d5a");gr.addColorStop(1,"#00796b");
+ g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalAlpha=Math.min(1,p*4);g.fillStyle="#fff";g.font="bold 54px Segoe UI";wrap(g,t,80,200+(1-Math.min(1,p*4))*30,1120,64);
+ g.font="30px Segoe UI";g.fillStyle="#e0f2f1";wrap(g,n,80,400,1120,42);g.globalAlpha=1;g.fillStyle="#ffffff40";g.fillRect(0,H-12,W,12);
+ g.fillStyle="#fff";g.fillRect(0,H-12,W*((i+p)/tot),12);g.font="20px Segoe UI";g.fillText(`${i+1}/${tot}`,W-90,H-30)}
+$("bVid").onclick=async()=>{st("Criando roteiro...");
+ const r=await ask([{role:"user",content:`Transforme o texto em 5 a 7 slides de vídeo corporativo explicativo. Uma linha por slide, formato: TÍTULO || NARRAÇÃO (2 frases). Use somente o conteúdo do texto. Sem numeração.\n\n${$("vt").value}`}]);
+ const sl=r.split("\n").filter(l=>l.includes("||")).map(l=>l.split("||").map(s=>s.replace(/[*#]/g,"").trim()));
+ if(!sl.length)return st("Não consegui montar o roteiro, tente novamente.");
+ const cv=$("cv"),g=cv.getContext("2d"),rec=new MediaRecorder(cv.captureStream(30),{mimeType:"video/webm"}),parts=[];
+ rec.ondataavailable=e=>parts.push(e.data);rec.start();st("🎬 Gravando (mantenha esta aba visível)...");
+ for(let i=0;i<sl.length;i++){const[t,n]=sl[i],dur=Math.max(4,n.split(" ").length/2.5)*1000,t0=performance.now();
+  const u=new SpeechSynthesisUtterance(n);u.lang="pt-BR";speechSynthesis.speak(u);
+  await new Promise(res=>{const f=()=>{const p=(performance.now()-t0)/dur;draw(g,t,n,i,sl.length,Math.min(p,1));p<1?requestAnimationFrame(f):res()};f()})}
+ rec.stop();await new Promise(r=>rec.onstop=r);
+ const a=$("dl");a.href=URL.createObjectURL(new Blob(parts,{type:"video/webm"}));a.download="apresentacao.webm";a.textContent="⬇ Baixar vídeo";st("✅ Vídeo pronto")};
+
+// ---------- Exportar / importar caso criptografado (AES-256) ----------
+async function key(pw,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:200000,hash:"SHA-256"},k,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+$("bExp").onclick=async()=>{if(!cur)return alert("Abra um caso");const pw=prompt("Crie uma senha para proteger o arquivo:");if(!pw)return;
+ const c=(await cases()).find(x=>x.id===cur),fl=await get("files:"+cur)||[],blobs={};for(const f of fl)blobs[f.id]=await b64(await get("blob:"+f.id));
+ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const enc=await crypto.subtle.encrypt({name:"AES-GCM",iv},await key(pw,salt),new TextEncoder().encode(JSON.stringify({c,fl,blobs})));
+ const a=el("a");a.href=URL.createObjectURL(new Blob([salt,iv,enc]));a.download=c.name+".caso";a.click()};
+$("bImp").onclick=()=>$("imp").click();
+$("imp").onchange=async e=>{const buf=new Uint8Array(await e.target.files[0].arrayBuffer()),pw=prompt("Senha do arquivo:");e.target.value="";
+ try{const d=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:buf.slice(16,28)},await key(pw,buf.slice(0,16)),buf.slice(28))));
+  d.c.access=[...new Set([...d.c.access,me.email])];await set("cases",(await cases()).filter(x=>x.id!==d.c.id).concat(d.c));
+  await set("files:"+d.c.id,d.fl);for(const[id,u]of Object.entries(d.blobs))await set("blob:"+id,await(await fetch(u)).blob());
+  renderCases();alert("✅ Caso importado")}catch{alert("Senha incorreta ou arquivo inválido")}};
+
+// ---------- Abas ----------
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>["tChat","tFlow","tVid"].forEach(s=>$(s).classList.toggle("hide",s!==b.dataset.t)));
+</script></body></html>
