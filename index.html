@@ -1,212 +1,240 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Analista de Casos</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZamboninIA</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 80'%3E%3Cg fill='%23b5793f'%3E%3Cpolygon points='8,0 58,0 50,12 8,12'/%3E%3Cpolygon points='64,0 92,0 36,80 8,80'/%3E%3Cpolygon points='48,68 92,68 92,80 40,80'/%3E%3C/g%3E%3C/svg%3E">
 <style>
-*{box-sizing:border-box}body{margin:0;font:14px Segoe UI,sans-serif;background:#f4f6f9;color:#1d2733}
-.hide{display:none!important}input,select,textarea,button{width:100%;padding:8px;margin:3px 0;border:1px solid #cfd6df;border-radius:6px;font:inherit}
-button{background:#0c2d5a;color:#fff;border:0;cursor:pointer}button:hover{background:#00796b}.sm{width:auto;padding:3px 8px;font-size:12px}
-#login{max-width:360px;margin:12vh auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 20px #0002}
-#app{display:flex;height:100vh}aside{width:280px;background:#0c2d5a;color:#fff;padding:14px;overflow:auto}
-aside h4{margin:14px 0 4px;color:#80cbc4}.case{background:#1a3f73;text-align:left}.case.on{background:#00796b}
-main{flex:1;padding:18px;overflow:auto}nav{display:flex;gap:6px;margin:10px 0}nav button{width:auto}
-#chat{background:#fff;border-radius:8px;padding:10px;height:48vh;overflow:auto}
-.msg{padding:10px;border-radius:8px;margin:6px 0;white-space:pre-wrap}.u{background:#e3f2fd}.ia{background:#f1f3f5}
-.src button{display:block;width:auto;background:none;color:#00796b;padding:2px 0;text-align:left;text-decoration:underline}
-.src pre{white-space:pre-wrap;font-size:11px;background:#fff;padding:6px;max-height:150px;overflow:auto}
-#fileList div{display:flex;justify-content:space-between;background:#fff;padding:5px 8px;margin:2px 0;border-radius:5px}
-#accBox label{display:inline-block;margin-right:12px}canvas{width:100%;max-width:640px;border-radius:8px;margin-top:8px}
-#st{font-size:12px;color:#00796b;margin:4px 0}#svg{background:#fff;padding:10px;border-radius:8px;overflow:auto}
+:root{--n:#0f1c2e;--n2:#16273d;--n3:#22395a;--w:#b5793f;--w2:#d39a5c;--c:#ece4d8;--bg:#f5f2ed;--ln:#e5ddd1}
+*{box-sizing:border-box}body{margin:0;font:14px "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--n)}
+.hide{display:none!important}
+input,select,textarea{width:100%;padding:10px 12px;margin:4px 0 10px;border:1px solid var(--ln);border-radius:8px;font:inherit;background:#fff}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--w);box-shadow:0 0 0 3px #b5793f33}
+button{padding:10px 16px;background:var(--w);color:#fff;border:0;border-radius:8px;cursor:pointer;font:600 14px inherit;transition:.15s}
+button:hover{background:var(--w2)}.ghost{background:transparent;border:1px solid var(--w);color:var(--w)}.ghost:hover{background:#b5793f22}
+.sm{padding:5px 10px;font-size:12px}.dark{background:var(--n)}.dark:hover{background:var(--n3)}.red{background:#8a3434}
+label{font-size:12px;font-weight:600;color:#5b6573;text-transform:uppercase;letter-spacing:.5px}
+.Z{width:34px}.mut{color:#7b8492}
+/* LOGIN */
+#login{display:grid;grid-template-columns:1.1fr 1fr;height:100vh}
+.cover{background:#0f1c2e url(logo.png) center/cover no-repeat}
+.form{display:flex;align-items:center;justify-content:center;padding:30px;background:#fff}
+.fbox{width:100%;max-width:360px}.fbox h2{font-size:28px;margin:0 0 4px}.fbox button{width:100%;margin-top:6px}
+#lmsg{color:#b33}
+@media(max-width:800px){#login{grid-template-columns:1fr;grid-template-rows:40vh 1fr}}
+/* APP */
+#app{display:flex;height:100vh}
+aside{width:250px;background:var(--n);color:var(--c);display:flex;flex-direction:column;border-right:3px solid var(--w)}
+.logo{display:flex;align-items:center;gap:10px;padding:22px 20px;font-size:20px;border-bottom:1px solid #ffffff14}.logo span{color:var(--w)}
+#menu{padding:12px;flex:1}#menu a{display:block;padding:11px 14px;border-radius:8px;cursor:pointer;margin:2px 0;color:#c8cfd9}
+#menu a:hover{background:var(--n2)}#menu a.on{background:var(--n3);color:#fff;border-left:3px solid var(--w)}
+.me{padding:16px;border-top:1px solid #ffffff14;font-size:12px}.me button{width:100%;margin-top:8px}
+main{flex:1;overflow:auto}header{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:#fff;border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:2}
+header h1{margin:0;font-size:20px;font-weight:600}#st{font-size:12px;color:var(--w)}
+.wrap{padding:28px 32px;max-width:1200px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+.card{background:#fff;border:1px solid var(--ln);border-radius:12px;padding:20px;box-shadow:0 1px 3px #0f1c2e0d}
+.stat b{font-size:30px;display:block;color:var(--n)}.act{cursor:pointer;transition:.15s}.act:hover{transform:translateY(-2px);border-color:var(--w)}
+.act .ic{font-size:26px}.act h3{margin:8px 0 4px;font-size:16px}
+.hero{background:linear-gradient(120deg,var(--n),var(--n3));color:var(--c);border-radius:14px;padding:28px;margin-bottom:22px;border-left:6px solid var(--w)}
+.hero h2{margin:0 0 6px}
+.two{display:grid;grid-template-columns:280px 1fr;gap:20px}@media(max-width:900px){.two{grid-template-columns:1fr}}
+.case{display:block;width:100%;text-align:left;background:#fff;color:var(--n);border:1px solid var(--ln);margin:6px 0;font-weight:500}
+.case:hover{background:#faf6f0}.case.on{border-color:var(--w);background:#f6ebdd}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--ln);gap:8px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--ln);margin:16px 0}.tabs a{padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;color:#5b6573}
+.tabs a.on{border-color:var(--w);color:var(--n);font-weight:600}
+#chat{height:48vh;overflow:auto;padding:4px}
+.msg{padding:12px 14px;border-radius:10px;margin:8px 0;white-space:pre-wrap;max-width:85%;line-height:1.5}.u{background:var(--n);color:#fff;margin-left:auto}.ia{background:#f3efe9}
+.src{margin-top:8px;font-size:12px}.src a{display:block;color:var(--w);cursor:pointer;text-decoration:underline}
+.src pre{white-space:pre-wrap;background:#fff;padding:8px;border-radius:6px;max-height:140px;overflow:auto}
+.ask{display:flex;gap:8px}.ask textarea{margin:0}
+#accBox label{text-transform:none;font-weight:400;margin-right:14px;display:inline-flex;gap:4px;align-items:center}#accBox input{width:auto;margin:0}
+canvas{width:100%;max-width:640px;border-radius:10px}#svg{overflow:auto;min-height:60px}
+#flowCode{font-family:monospace;font-size:12px}
 </style></head><body>
 
-<div id="login"><h2>🔒 Analista de Casos</h2><p id="lhint" style="font-size:12px"></p>
-<input id="em" placeholder="E-mail"><input id="pw" type="password" placeholder="Senha"><button id="bLogin">Entrar</button></div>
+<div id="login"><div class="cover"></div><div class="form"><div class="fbox">
+<h2>Bem-vindo</h2><p class="mut">Acesse sua conta ZamboninIA</p>
+<label>E-mail</label><input id="lEmail" type="email"><label>Senha</label><input id="lPw" type="password">
+<button id="enter">Entrar</button><p id="lmsg"></p>
+<small class="mut">No primeiro acesso, o e-mail e a senha digitados viram a conta do dono.</small></div></div></div>
 
 <div id="app" class="hide">
-<aside>
- <b id="who"></b> <button id="bOut" class="sm">Sair</button>
- <h4>🧠 Modelo de IA</h4>
- <select id="model">
-  <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 1.5B (leve – recomendado)</option>
-  <option value="Qwen2.5-1.5B-Instruct-q4f32_1-MLC">Qwen 1.5B (compatibilidade)</option>
-  <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">Qwen 3B (melhor, mais pesado)</option>
-  <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B</option>
- </select><button id="bLoad">Carregar IA</button>
- <h4>📁 Casos</h4><div id="caseList"></div>
- <div class="own"><input id="nc" placeholder="Nome do novo caso"><button id="bCase">+ Criar caso</button></div>
- <div class="own"><h4>👥 Equipe</h4><input id="ne" placeholder="E-mail do funcionário"><input id="np" type="password" placeholder="Senha inicial">
-  <button id="bUser">+ Adicionar funcionário</button><div id="userList"></div></div>
- <h4>🔁 Compartilhar caso</h4><button id="bExp">Exportar (criptografado)</button><button id="bImp">Importar .caso</button>
- <input type="file" id="imp" accept=".caso" class="hide">
-</aside>
-<main>
- <div id="st"></div><h2 id="cTitle">Selecione ou crie um caso</h2>
- <div id="caseArea" class="hide">
-  <label>📎 Anexar arquivos (PDF, DOCX, XLSX, CSV, imagens, TXT):</label><input type="file" id="up" multiple>
-  <div id="fileList"></div><div id="accBox" class="own"></div>
-  <nav><button data-t="tChat">💬 Conversar com arquivos</button><button data-t="tFlow">🔀 Fluxograma</button><button data-t="tVid">🎬 Vídeo</button></nav>
-  <section id="tChat"><div id="chat"></div><textarea id="q" rows="3" placeholder="Pergunte sobre os arquivos deste caso..."></textarea><button id="bAsk">Perguntar</button></section>
-  <section id="tFlow" class="hide"><textarea id="ft" rows="4" placeholder="Descreva o fluxo (vazio = usar os arquivos do caso)"></textarea>
-   <button id="bFlow">Gerar fluxograma</button><textarea id="mm" rows="6" placeholder="Código Mermaid (editável)"></textarea>
-   <button id="bRender">Atualizar desenho</button><div id="svg"></div><button id="bSvg">⬇ Baixar SVG</button></section>
-  <section id="tVid" class="hide"><textarea id="vt" rows="6" placeholder="Cole o texto da apresentação"></textarea>
-   <button id="bVid">Gerar vídeo corporativo</button><canvas id="cv" width="1280" height="720"></canvas><p><a id="dl"></a></p></section>
- </div>
-</main></div>
+<aside><div class="logo"><svg class="Z" viewBox="0 0 100 80"><g fill="#b5793f"><polygon points="8,0 58,0 50,12 8,12"/><polygon points="64,0 92,0 36,80 8,80"/><polygon points="48,68 92,68 92,80 40,80"/></g></svg><div>Zambonin<span>IA</span></div></div>
+<nav id="menu"><a data-p="home">🏠 Início</a><a data-p="cases">📁 Casos</a><a data-p="team" id="mTeam">👥 Equipe</a><a data-p="cfg">⚙️ Configurações</a></nav>
+<div class="me"><div id="who"></div><button id="logout" class="ghost sm">Sair</button></div></aside>
+<main><header><h1 id="pTitle"></h1><span id="st"></span></header><div class="wrap">
+
+<section id="p-home" class="page">
+<div class="hero"><h2 id="hello"></h2><div>Seu assistente inteligente para análise de documentos, fluxogramas e vídeos.</div></div>
+<div class="grid"><div class="card stat"><span class="mut">Casos</span><b id="sCases">0</b></div><div class="card stat"><span class="mut">Arquivos</span><b id="sFiles">0</b></div><div class="card stat"><span class="mut">Modo da IA</span><b id="sMode" style="font-size:20px"></b></div></div>
+<h3>Ações rápidas</h3><div class="grid">
+<div class="card act" data-go="new"><div class="ic">➕</div><h3>Novo caso</h3><span class="mut">Crie um caso e anexe documentos</span></div>
+<div class="card act" data-go="chat"><div class="ic">💬</div><h3>Perguntar aos arquivos</h3><span class="mut">Respostas com fonte e página</span></div>
+<div class="card act" data-go="flow"><div class="ic">🔀</div><h3>Gerar fluxograma</h3><span class="mut">Processos em diagrama</span></div>
+<div class="card act" data-go="video"><div class="ic">🎬</div><h3>Gerar vídeo</h3><span class="mut">Texto em vídeo explicativo</span></div></div></section>
+
+<section id="p-cases" class="page hide"><div class="two">
+<div><div class="card"><label>Novo caso</label><input id="caseName" placeholder="Nome do caso"><button id="newCase" style="width:100%">+ Criar caso</button>
+<button id="importBtn" class="ghost" style="width:100%;margin-top:8px">Importar .caso</button><input id="importFile" type="file" accept=".caso" class="hide"></div>
+<div id="cases"></div></div>
+<div><div id="noCase" class="card mut">Selecione ou crie um caso.</div>
+<div id="caseView" class="card hide">
+<div class="row" style="border:0"><h2 id="caseTitle" style="margin:0"></h2><button id="exportBtn" class="ghost sm">🔐 Exportar</button></div>
+<div id="accBox"></div>
+<label>Anexar arquivos (PDF, DOCX, Excel, CSV, imagens, TXT)</label><input id="files" type="file" multiple><div id="fileList"></div>
+<div class="tabs"><a data-t="chat" class="on">💬 Perguntar</a><a data-t="flow">🔀 Fluxograma</a><a data-t="video">🎬 Vídeo</a></div>
+<div id="t-chat"><div id="chat"></div><div class="ask"><textarea id="q" rows="2" placeholder="Pergunte sobre os arquivos... (Enter envia)"></textarea><button id="ask">Enviar</button></div></div>
+<div id="t-flow" class="hide"><textarea id="flowIn" rows="3" placeholder="Descreva o processo (vazio = usa os arquivos)"></textarea><button id="genFlow">Gerar</button>
+<textarea id="flowCode" rows="5" style="margin-top:10px"></textarea><button id="drawFlow" class="dark sm">Atualizar desenho</button> <button id="dlSvg" class="ghost sm">⬇ Baixar SVG</button><div id="svg"></div></div>
+<div id="t-video" class="hide"><textarea id="vidIn" rows="4" placeholder="Cole o texto do vídeo"></textarea><button id="genVid">Gerar vídeo</button> <button id="dlVid" class="ghost hide">⬇ Baixar vídeo</button><br><br><canvas id="cv" width="1280" height="720"></canvas></div>
+</div></div></div></section>
+
+<section id="p-team" class="page hide"><div class="two"><div class="card"><label>E-mail do funcionário</label><input id="tEmail"><label>Senha inicial</label><input id="tPw"><button id="addUser" style="width:100%">+ Adicionar</button></div><div class="card" id="users"></div></div></section>
+
+<section id="p-cfg" class="page hide"><div class="card" style="max-width:560px">
+<label>Modo da IA</label><select id="cMode"><option value="cloud">☁️ Nuvem – Gemini (rápida)</option><option value="local">🔒 Local (privada, mais lenta)</option></select>
+<div id="cCloud"><label>Chave da API Gemini</label><input id="cKey" type="password" placeholder="Cole aqui sua chave"><label>Modelo</label><input id="cModel"></div>
+<div id="cLocal"><label>Modelo local</label><select id="lModel"><option>Qwen2.5-1.5B-Instruct-q4f16_1-MLC</option><option>Qwen2.5-1.5B-Instruct-q4f32_1-MLC</option><option>Qwen2.5-3B-Instruct-q4f16_1-MLC</option></select>
+<button id="loadAI" class="dark">Carregar IA local</button></div><br><button id="saveCfg">Salvar</button></div></section>
+</div></main></div>
 
 <script type="module">
-import * as pdfjs from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-pdfjs.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
-mermaid.initialize({startOnLoad:false,securityLevel:"strict"});
-const $=id=>document.getElementById(id), el=(t,x)=>{const e=document.createElement(t);if(x!=null)e.textContent=x;return e};
-const st=t=>$("st").textContent=t;
-if(!navigator.gpu) st("⚠️ WebGPU indisponível neste navegador – a IA não poderá rodar.");
+const $=id=>document.getElementById(id),Q=s=>document.querySelectorAll(s);
+const dbp=new Promise((r,j)=>{const o=indexedDB.open("zamboninia",1);o.onupgradeneeded=()=>o.result.createObjectStore("kv");o.onsuccess=()=>r(o.result);o.onerror=j});
+async function get(k){const d=await dbp;return new Promise(r=>{const q=d.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>r(q.result)})}
+async function set(k,v){const d=await dbp;return new Promise(r=>{const t=d.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=r})}
+async function del(k){const d=await dbp;d.transaction("kv","readwrite").objectStore("kv").delete(k)}
+const st=m=>$("st").textContent=m;
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function dl(b,n){const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=n;a.click()}
+const S={};const js=u=>S[u]||=new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
+let me=null,cur=null,engine=null,mm=null,pdfjs=null;const owner=()=>me.role=="owner";
+let cfg=await get("cfg")||{mode:"cloud",key:"",model:"gemini-2.5-flash",local:"Qwen2.5-1.5B-Instruct-q4f16_1-MLC"};
 
-// ---------- Banco local (IndexedDB) ----------
-const idb=await new Promise(r=>{const q=indexedDB.open("analista",1);q.onupgradeneeded=()=>q.result.createObjectStore("kv");q.onsuccess=()=>r(q.result)});
-const get=k=>new Promise(r=>{const q=idb.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>r(q.result)});
-const set=(k,v)=>new Promise(r=>{const t=idb.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=r});
-const del=k=>new Promise(r=>{const t=idb.transaction("kv","readwrite");t.objectStore("kv").delete(k);t.oncomplete=r});
-const users=async()=>await get("users")||[], cases=async()=>await get("cases")||[];
+/* NAVEGAÇÃO */
+const titles={home:"Início",cases:"Casos",team:"Equipe",cfg:"Configurações"};
+function show(p){Q(".page").forEach(s=>s.classList.add("hide"));$("p-"+p).classList.remove("hide");$("pTitle").textContent=titles[p];
+Q("#menu a").forEach(a=>a.classList.toggle("on",a.dataset.p==p));if(p=="home")renderHome();if(p=="team")renderUsers();if(p=="cfg")fillCfg()}
+Q("#menu a").forEach(a=>a.onclick=()=>show(a.dataset.p));
+function tab(t){Q(".tabs a").forEach(a=>a.classList.toggle("on",a.dataset.t==t));["chat","flow","video"].forEach(x=>$("t-"+x).classList.toggle("hide",x!=t))}
+Q(".tabs a").forEach(a=>a.onclick=()=>tab(a.dataset.t));
+Q(".act").forEach(c=>c.onclick=()=>{show("cases");const g=c.dataset.go;if(g=="new")return $("caseName").focus();if(cur)tab(g);else st("Selecione um caso primeiro")});
 
-// ---------- Login / usuários ----------
-async function hash(pw,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveBits"]);
- const b=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:200000,hash:"SHA-256"},k,256);
- return btoa(String.fromCharCode(...new Uint8Array(b)))}
-let me=null,cur=null,eng=null;
-(await users()).length||($("lhint").textContent="Primeiro acesso: o e-mail e senha informados serão do DONO.");
-$("bLogin").onclick=async()=>{let us=await users();const e=$("em").value.trim().toLowerCase(),p=$("pw").value;if(!e||!p)return;
- if(!us.length){const salt=crypto.randomUUID();us=[{email:e,salt,hash:await hash(p,salt),role:"owner",active:true}];await set("users",us)}
- const u=us.find(x=>x.email===e&&x.active);if(!u||await hash(p,u.salt)!==u.hash)return alert("Login inválido ou acesso removido");
- me=u;$("pw").value="";$("login").classList.add("hide");$("app").classList.remove("hide");
- $("who").textContent=`👤 ${u.email} (${u.role==="owner"?"Dono":"Funcionário"})`;
- document.querySelectorAll(".own").forEach(x=>x.classList.toggle("hide",u.role!=="owner"));renderCases();renderUsers()};
-$("bOut").onclick=()=>location.reload();
-$("bUser").onclick=async()=>{const us=await users(),e=$("ne").value.trim().toLowerCase(),p=$("np").value;
- if(!e||!p||us.some(u=>u.email===e))return alert("Dados inválidos ou usuário já existe");
- const salt=crypto.randomUUID();us.push({email:e,salt,hash:await hash(p,salt),role:"employee",active:true});await set("users",us);
- $("ne").value=$("np").value="";renderUsers();renderAccess()};
-async function renderUsers(){if(me.role!=="owner")return;const us=await users();
- $("userList").replaceChildren(...us.filter(u=>u.role!=="owner").map(u=>{const d=el("div",(u.active?"🟢 ":"🔴 ")+u.email+" ");
-  const b=el("button",u.active?"Remover acesso":"Reativar");b.className="sm";b.onclick=async()=>{u.active=!u.active;await set("users",us);renderUsers()};d.append(b);return d}))}
+/* LOGIN */
+$("enter").onclick=async()=>{const e=$("lEmail").value.trim().toLowerCase(),p=$("lPw").value;if(!e||!p)return;let us=await get("users")||[];
+if(!us.length){const salt=crypto.randomUUID();us=[{email:e,salt,hash:await sha(salt+p),role:"owner",active:true}];await set("users",us)}
+const u=us.find(x=>x.email==e);if(!u||u.hash!=await sha(u.salt+p))return $("lmsg").textContent="E-mail ou senha incorretos.";
+if(!u.active)return $("lmsg").textContent="Seu acesso foi removido.";
+me=u;$("login").classList.add("hide");$("app").classList.remove("hide");$("who").textContent=u.email+(owner()?" · dono":"");
+if(!owner())$("mTeam").classList.add("hide");$("hello").textContent="Olá, "+u.email.split(/[@.]/)[0]+"!";renderCases();show("home")};
+$("lPw").onkeydown=e=>{if(e.key=="Enter")$("enter").click()};$("logout").onclick=()=>location.reload();
 
-// ---------- Casos ----------
-$("bCase").onclick=async()=>{const n=$("nc").value.trim();if(!n)return;const cs=await cases(),id=crypto.randomUUID();
- cs.push({id,name:n,access:[]});await set("cases",cs);$("nc").value="";openCase(id)};
-async function renderCases(){const cs=(await cases()).filter(c=>me.role==="owner"||c.access.includes(me.email));
- $("caseList").replaceChildren(...cs.map(c=>{const b=el("button","📁 "+c.name);b.className="case"+(c.id===cur?" on":"");b.onclick=()=>openCase(c.id);return b}))}
-async function openCase(id){cur=id;const c=(await cases()).find(x=>x.id===id);$("cTitle").textContent="📁 "+c.name;
- $("caseArea").classList.remove("hide");$("chat").innerHTML="";renderCases();renderFiles();renderAccess()}
-async function renderAccess(){if(me.role!=="owner"||!cur)return;const cs=await cases(),c=cs.find(x=>x.id===cur),us=(await users()).filter(u=>u.role!=="owner");
- const box=$("accBox");box.replaceChildren(el("b","🔐 Quem acessa este caso: "));
- us.forEach(u=>{const l=el("label"),cb=el("input");cb.type="checkbox";cb.style.width="auto";cb.checked=c.access.includes(u.email);
-  cb.onchange=async()=>{c.access=cb.checked?[...c.access,u.email]:c.access.filter(x=>x!==u.email);await set("cases",cs)};l.append(cb," "+u.email);box.append(l)})}
+/* INÍCIO */
+async function myCases(){return(await get("cases")||[]).filter(c=>owner()||c.access.includes(me.email))}
+async function renderHome(){const cs=await myCases();let n=0;for(const c of cs)n+=(await get("files_"+c.id)||[]).length;
+$("sCases").textContent=cs.length;$("sFiles").textContent=n;$("sMode").textContent=cfg.mode=="cloud"?"☁️ Nuvem":"🔒 Local"}
 
-// ---------- Extração ----------
-const ocr=async src=>(await Tesseract.recognize(src,"por")).data.text;
-function split(t,loc,page,out,num){const S=1500;for(let i=0,k=1;i<t.length;i+=S-200,k++)out.push({t:t.slice(i,i+S),loc:num?`${loc} ${k}`:loc,page})}
-async function extract(f){const n=f.name.toLowerCase(),out=[];
- if(n.endsWith(".pdf")){const pdf=await pdfjs.getDocument({data:await f.arrayBuffer()}).promise;
-  for(let i=1;i<=pdf.numPages;i++){st(`${f.name}: página ${i}/${pdf.numPages}`);const p=await pdf.getPage(i);
-   let t=(await p.getTextContent()).items.map(x=>x.str).join(" ");
-   if(t.trim().length<30){const v=p.getViewport({scale:2}),c=el("canvas");c.width=v.width;c.height=v.height;
-    await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;t=await ocr(c)}
-   split(t,`página ${i}`,i,out)}}
- else if(/\.(xlsx|xlsm|xls|csv)$/.test(n)){const wb=XLSX.read(await f.arrayBuffer());
-  for(const s of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[s],{header:1,raw:false,defval:""}),h=rows[0]||[];
-   for(let i=1;i<rows.length;i+=25){const blk=rows.slice(i,i+25).map((r,j)=>`Linha ${i+j+1}: `+r.map((v,k)=>v!==""?`${h[k]||"Col"+(k+1)}=${v}`:"").filter(Boolean).join("; ")).join("\n");
-    out.push({t:`Aba ${s}\n${blk}`,loc:`aba "${s}" linhas ${i+1}-${Math.min(i+25,rows.length)}`,page:1})}}}
- else if(n.endsWith(".docx"))split((await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value,"trecho",1,out,true);
- else if(/\.(png|jpe?g|webp|bmp)$/.test(n))split(await ocr(f),"imagem",1,out);
- else split(await f.text(),"trecho",1,out,true);
- return out}
+/* CONFIGURAÇÕES */
+function fillCfg(){$("cMode").value=cfg.mode;$("cKey").value=cfg.key;$("cModel").value=cfg.model;$("lModel").value=cfg.local;toggleCfg()}
+function toggleCfg(){$("cCloud").classList.toggle("hide",$("cMode").value!="cloud");$("cLocal").classList.toggle("hide",$("cMode").value!="local")}
+$("cMode").onchange=toggleCfg;
+$("saveCfg").onclick=async()=>{cfg={mode:$("cMode").value,key:$("cKey").value.trim(),model:$("cModel").value.trim()||"gemini-2.5-flash",local:$("lModel").value};await set("cfg",cfg);st("✅ Configurações salvas")};
+$("loadAI").onclick=async()=>{try{st("⏳ Carregando IA local...");const w=await import("https://esm.run/@mlc-ai/web-llm");
+engine=await w.CreateMLCEngine($("lModel").value,{initProgressCallback:p=>st("⏳ "+p.text)});st("🧠 IA local pronta")}catch(e){st("❌ "+e.message)}};
+
+async function ask(prompt,sys){
+if(cfg.mode=="cloud"){if(!cfg.key){show("cfg");throw new Error("Cole sua chave Gemini em Configurações.")}
+ const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.key}`,{method:"POST",headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2}})});
+ const j=await r.json();if(!r.ok)throw new Error(j.error?.message||"Erro "+r.status);return j.candidates[0].content.parts.map(p=>p.text).join("")}
+if(!engine){show("cfg");throw new Error("Clique em 'Carregar IA local' em Configurações.")}
+const r=await engine.chat.completions.create({messages:[{role:"system",content:sys},{role:"user",content:prompt}],temperature:0.2});return r.choices[0].message.content}
+
+/* CASOS */
+async function renderCases(){const cs=await myCases();$("cases").innerHTML="";
+cs.forEach(c=>{const b=document.createElement("button");b.className="case"+(cur&&cur.id==c.id?" on":"");b.textContent="📁 "+c.name;b.onclick=()=>openCase(c.id);$("cases").append(b)})}
+$("newCase").onclick=async()=>{const n=$("caseName").value.trim();if(!n)return;const cs=await get("cases")||[];
+const c={id:crypto.randomUUID(),name:n,access:owner()?[]:[me.email]};cs.push(c);await set("cases",cs);$("caseName").value="";openCase(c.id)};
+async function openCase(id){cur=(await get("cases")).find(c=>c.id==id);show("cases");$("noCase").classList.add("hide");$("caseView").classList.remove("hide");
+$("caseTitle").textContent=cur.name;$("chat").innerHTML="";tab("chat");renderCases();renderFiles();renderAcc()}
+
+/* EQUIPE */
+async function renderUsers(){const us=await get("users");$("users").innerHTML="<label>Funcionários</label>";
+us.filter(u=>u.role!="owner").forEach(u=>{const d=document.createElement("div");d.className="row";d.innerHTML=`<span>${u.active?"🟢":"🔴"} ${u.email}</span>`;
+const b=document.createElement("button");b.className="sm "+(u.active?"red":"");b.textContent=u.active?"Remover acesso":"Reativar";
+b.onclick=async()=>{u.active=!u.active;await set("users",us);renderUsers()};d.append(b);$("users").append(d)})}
+$("addUser").onclick=async()=>{const e=$("tEmail").value.trim().toLowerCase(),p=$("tPw").value;if(!e||!p)return;const us=await get("users");
+if(us.find(u=>u.email==e))return alert("Esse e-mail já existe.");const salt=crypto.randomUUID();
+us.push({email:e,salt,hash:await sha(salt+p),role:"func",active:true});await set("users",us);$("tEmail").value=$("tPw").value="";renderUsers()};
+async function renderAcc(){const box=$("accBox");box.innerHTML="";if(!owner())return;const us=(await get("users")).filter(u=>u.role!="owner");
+box.innerHTML="<p><b>🔐 Acesso:</b> "+(us.length?"":"<span class='mut'>adicione funcionários em Equipe</span>")+"</p>";
+us.forEach(u=>{const l=document.createElement("label"),c=document.createElement("input");c.type="checkbox";c.checked=cur.access.includes(u.email);
+c.onchange=async()=>{const cs=await get("cases"),x=cs.find(k=>k.id==cur.id);x.access=c.checked?[...x.access,u.email]:x.access.filter(m=>m!=u.email);cur=x;await set("cases",cs)};
+l.append(c,u.email);box.append(l)})}
+
+/* ARQUIVOS (bibliotecas carregam só quando usadas) */
+function chunk(t,p,o){t=(t||"").replace(/\s+/g," ").trim();for(let i=0;i<t.length;i+=800)o.push({t:t.slice(i,i+1000),p})}
+async function extract(f){const o=[],ext=f.name.split(".").pop().toLowerCase();
+if(ext=="pdf"){if(!pdfjs){pdfjs=await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs");pdfjs.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs"}
+ const pdf=await pdfjs.getDocument({data:await f.arrayBuffer()}).promise;for(let i=1;i<=pdf.numPages;i++){const tc=await(await pdf.getPage(i)).getTextContent();chunk(tc.items.map(x=>x.str).join(" "),i,o)}}
+else if(ext=="docx"){await js("https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js");chunk((await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value,null,o)}
+else if(["xlsx","xls","csv"].includes(ext)){await js("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");const wb=XLSX.read(await f.arrayBuffer());wb.SheetNames.forEach(n=>chunk("Planilha "+n+": "+XLSX.utils.sheet_to_csv(wb.Sheets[n]),null,o))}
+else if(f.type.startsWith("image/")){await js("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");chunk((await Tesseract.recognize(f,"por")).data.text,null,o)}
+else chunk(await f.text(),null,o);return o}
+$("files").onchange=async e=>{const fs=await get("files_"+cur.id)||[];
+for(const f of e.target.files){st("⏳ Lendo "+f.name+"...");try{const id=crypto.randomUUID();fs.push({id,name:f.name,chunks:await extract(f)});await set("blob_"+id,f)}catch(err){alert("Erro em "+f.name+": "+err.message)}}
+await set("files_"+cur.id,fs);st("✅ Arquivos processados");e.target.value="";renderFiles()};
+async function renderFiles(){const fs=await get("files_"+cur.id)||[];$("fileList").innerHTML="";
+fs.forEach(f=>{const d=document.createElement("div");d.className="row";d.innerHTML=`<span>📄 ${f.name}</span>`;const b=document.createElement("button");b.className="ghost sm";b.textContent="Excluir";
+b.onclick=async()=>{if(!confirm("Excluir "+f.name+"?"))return;await set("files_"+cur.id,fs.filter(x=>x.id!=f.id));del("blob_"+f.id);renderFiles()};d.append(b);$("fileList").append(d)})}
+
+/* BUSCA + CHAT */
 const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-$("up").onchange=async e=>{const fl=await get("files:"+cur)||[];
- for(const f of e.target.files){st(`Lendo ${f.name}...`);const id=crypto.randomUUID();
-  const ch=(await extract(f)).filter(c=>c.t.trim()).map(c=>({...c,n:norm(c.t)}));
-  await set("blob:"+id,f);fl.push({id,name:f.name,chunks:ch});await set("files:"+cur,fl)}
- e.target.value="";st("✅ Arquivos processados");renderFiles()};
-async function renderFiles(){const fl=await get("files:"+cur)||[];
- $("fileList").replaceChildren(...fl.map(f=>{const d=el("div"),a=el("button","📄 "+f.name);a.className="sm";a.onclick=()=>openFile(f.id,1);d.append(a);
-  if(me.role==="owner"){const x=el("button","🗑");x.className="sm";x.onclick=async()=>{if(!confirm("Excluir "+f.name+"?"))return;
-   await del("blob:"+f.id);await set("files:"+cur,fl.filter(y=>y.id!==f.id));renderFiles()};d.append(x)}return d}))}
-async function openFile(id,page){const b=await get("blob:"+id);window.open(URL.createObjectURL(b)+(page>1?"#page="+page:""),"_blank")}
+async function search(q,k=8){const fs=await get("files_"+cur.id)||[],ws=norm(q).split(/[^a-z0-9]+/).filter(w=>w.length>2),all=[];
+fs.forEach(f=>f.chunks.forEach(c=>{const t=norm(c.t);let s=0;ws.forEach(w=>{if(t.includes(w))s+=1+t.split(w).length/10});if(s)all.push({...c,s,file:f})}));
+return all.sort((a,b)=>b.s-a.s).slice(0,k)}
+function addMsg(c,t){const d=document.createElement("div");d.className="msg "+c;d.textContent=t;$("chat").append(d);$("chat").scrollTop=1e9;return d}
+$("ask").onclick=async()=>{const q=$("q").value.trim();if(!q)return;$("q").value="";addMsg("u",q);const hits=await search(q);
+if(!hits.length)return addMsg("ia","Não encontrei nada sobre isso nos arquivos do caso.");
+const ctx=hits.map((h,i)=>`[${i+1}] (${h.file.name}${h.p?", pág. "+h.p:""}) ${h.t}`).join("\n\n");const d=addMsg("ia","⏳ Analisando...");
+try{d.textContent=await ask(`Trechos:\n${ctx}\n\nPergunta: ${q}`,"Você é a ZamboninIA, assistente corporativa. Responda em português do Brasil, de forma clara e objetiva, somente com base nos trechos. Cite as fontes como [1], [2]. Se não estiver nos trechos, diga 'Não encontrei nos arquivos'.")}
+catch(e){return d.textContent="⚠ "+e.message}
+const s=document.createElement("div");s.className="src";s.innerHTML="<b>Fontes:</b>";
+hits.forEach((h,i)=>{const a=document.createElement("a");a.textContent=`[${i+1}] ${h.file.name}${h.p?" – pág. "+h.p:""}`;
+a.onclick=async()=>window.open(URL.createObjectURL(await get("blob_"+h.file.id))+(h.p?"#page="+h.p:""));
+const t=document.createElement("a");t.textContent="ver trecho";const pre=document.createElement("pre");pre.className="hide";pre.textContent=h.t;t.onclick=()=>pre.classList.toggle("hide");s.append(a,t,pre)});d.append(s)};
+$("q").onkeydown=e=>{if(e.key=="Enter"&&!e.shiftKey){e.preventDefault();$("ask").click()}};
 
-// ---------- Busca (somente nos arquivos do caso) ----------
-const STOP=new Set("a o e de da do das dos em para com que qual quais um uma os as no na nos nas por se ao sobre como".split(" "));
-function search(q,ch,k=5){const ts=norm(q).split(/[^a-z0-9.,/-]+/).filter(w=>w.length>2&&!STOP.has(w)),N=ch.length,df={};
- ts.forEach(w=>df[w]=ch.filter(c=>c.n.includes(w)).length);
- return ch.map(c=>({c,s:ts.reduce((a,w)=>{const tf=c.n.split(w).length-1;return a+(tf?Math.log(1+N/(df[w]||1))*tf/(tf+1.2):0)},0)}))
-  .filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,k).map(x=>x.c)}
+/* FLUXOGRAMA */
+async function drawFlow(){if(!mm){mm=(await import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs")).default;mm.initialize({startOnLoad:false,theme:"base",themeVariables:{primaryColor:"#f6ebdd",primaryBorderColor:"#b5793f",lineColor:"#0f1c2e"}})}
+try{const{svg}=await mm.render("m"+Date.now(),$("flowCode").value);$("svg").innerHTML=svg}catch(e){$("svg").textContent="⚠ Erro no desenho. Gere de novo ou ajuste o código."}}
+$("genFlow").onclick=async()=>{let t=$("flowIn").value.trim();if(!t){const fs=await get("files_"+cur.id)||[];t=fs.flatMap(f=>f.chunks.map(c=>c.t)).join(" ").slice(0,12000)}
+if(!t)return alert("Descreva o processo ou anexe arquivos.");st("⏳ Gerando fluxograma...");
+try{const c=await ask(t,"Converta o processo em fluxograma Mermaid. Responda SOMENTE com o código, começando com 'flowchart TD'. IDs simples (A, B, C), textos curtos entre colchetes, sem aspas nem parênteses nos textos.");
+$("flowCode").value=c.replace(/```(mermaid)?/g,"").trim();await drawFlow();st("✅ Fluxograma pronto")}catch(e){st("⚠ "+e.message)}};
+$("drawFlow").onclick=drawFlow;$("dlSvg").onclick=()=>{const s=$("svg").innerHTML;if(s.startsWith("<svg"))dl(new Blob([s],{type:"image/svg+xml"}),"fluxograma.svg")};
 
-// ---------- IA local (WebGPU) ----------
-$("model").onchange=()=>{eng=null};
-async function llm(){if(!eng)eng=await webllm.CreateMLCEngine($("model").value,{initProgressCallback:p=>st("🧠 "+p.text)});st("🧠 IA pronta");return eng}
-$("bLoad").onclick=()=>llm().catch(e=>st("Erro: "+e.message+" – tente o modelo 'compatibilidade'"));
-async function ask(m){const e=await llm();return(await e.chat.completions.create({messages:m,temperature:0})).choices[0].message.content}
+/* VÍDEO */
+function frame(g,t,i,n){const gr=g.createLinearGradient(0,0,1280,720);gr.addColorStop(0,"#0f1c2e");gr.addColorStop(1,"#22395a");g.fillStyle=gr;g.fillRect(0,0,1280,720);
+g.fillStyle="#b5793f";g.fillRect(40,0,8,720);g.fillRect(1232,0,8,720);g.fillRect(110,150,120,4);g.font="22px Segoe UI";g.fillText("ZamboninIA",110,660);g.fillText(`${i+1}/${n}`,1130,660);
+g.fillStyle="#ece4d8";g.font="42px Segoe UI";let l="",y=230;for(const w of t.split(" ")){if(g.measureText(l+w).width>1050){g.fillText(l,110,y);l="";y+=58}l+=w+" "}g.fillText(l,110,y)}
+$("genVid").onclick=async()=>{const txt=$("vidIn").value.trim();if(!txt)return;const parts=txt.split(/(?<=[.!?])\s+/).filter(Boolean),g=$("cv").getContext("2d");
+$("dlVid").classList.add("hide");const rec=new MediaRecorder($("cv").captureStream(30),{mimeType:"video/webm"}),ch=[];rec.ondataavailable=e=>ch.push(e.data);rec.start();
+for(let i=0;i<parts.length;i++){st(`🎬 Gravando ${i+1}/${parts.length}... mantenha a aba aberta`);const end=Date.now()+Math.max(3000,parts[i].length*70);
+ while(Date.now()<end){frame(g,parts[i],i,parts.length);await new Promise(r=>requestAnimationFrame(r))}}
+rec.stop();await new Promise(r=>rec.onstop=r);const blob=new Blob(ch,{type:"video/webm"});st("✅ Vídeo pronto");$("dlVid").onclick=()=>dl(blob,"video-zamboninia.webm");$("dlVid").classList.remove("hide")};
 
-// ---------- Chat com arquivos ----------
-const SYS=`Você é analista especialista em contratos de saúde pública (Lei 14.133/2021, Lei 8.080/1990, contratos de gestão com OS, convênios SUS, cronogramas físico-financeiros, fluxos assistenciais).
-REGRAS: 1) Use SOMENTE os TRECHOS fornecidos; nunca conhecimento externo. 2) Se a resposta não estiver nos trechos, responda: "Não encontrei essa informação nos arquivos do caso." 3) Cite a fonte de cada afirmação como [n]. 4) Copie números, datas e valores EXATAMENTE como aparecem. 5) Quando relevante, aponte prazos, multas, metas, obrigações e inconsistências. Responda em português.`;
-function msg(c,t){const d=el("div");d.className="msg "+c;d.append(el("span",t));$("chat").append(d);$("chat").scrollTop=1e9;return d}
-$("bAsk").onclick=async()=>{const q=$("q").value.trim();if(!q)return;$("q").value="";msg("u",q);
- const fl=await get("files:"+cur)||[],all=fl.flatMap(f=>f.chunks.map(c=>({...c,fid:f.id,file:f.name}))),hits=search(q,all);
- if(!hits.length)return msg("ia","Não encontrei essa informação nos arquivos do caso.");
- const d=msg("ia","⏳ Analisando os arquivos...");
- try{const a=await ask([{role:"system",content:SYS},{role:"user",content:"TRECHOS:\n"+hits.map((h,i)=>`[${i+1}] (${h.file} – ${h.loc})\n${h.t}`).join("\n\n")+"\n\nPERGUNTA: "+q}]);
-  d.firstChild.textContent=a;let used=hits.filter((_,i)=>a.includes(`[${i+1}]`));if(!used.length)used=hits;
-  const s=el("div");s.className="src";s.append(el("b","Fontes:"));
-  used.forEach(h=>{const n=hits.indexOf(h)+1,b=el("button",`📄 [${n}] ${h.file} – ${h.loc}`);b.onclick=()=>openFile(h.fid,h.page);
-   const det=el("details");det.append(el("summary","ver trecho original"),el("pre",h.t));s.append(b,det)});d.append(s)}
- catch(e){d.firstChild.textContent="Erro na IA: "+e.message}};
-$("q").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("bAsk").click()}};
-
-// ---------- Fluxograma ----------
-$("bFlow").onclick=async()=>{let src=$("ft").value.trim();
- if(!src)src=((await get("files:"+cur))||[]).flatMap(f=>f.chunks).map(c=>c.t).join("\n").slice(0,5000);
- st("Gerando fluxograma...");const r=await ask([{role:"user",content:`Converta o conteúdo em fluxograma Mermaid "flowchart TD". Use somente o conteúdo. Rótulos curtos entre aspas, ex: A["Início"] --> B{"Aprovado?"}. Responda APENAS o código.\n\n${src}`}]);
- $("mm").value=r.replace(/```(mermaid)?/g,"").trim();render();st("")};
-async function render(){try{$("svg").innerHTML=(await mermaid.render("g"+Date.now(),$("mm").value)).svg}catch{$("svg").textContent="Código Mermaid inválido – ajuste e clique em Atualizar."}}
-$("bRender").onclick=render;
-$("bSvg").onclick=()=>{const a=el("a");a.href=URL.createObjectURL(new Blob([$("svg").innerHTML],{type:"image/svg+xml"}));a.download="fluxo.svg";a.click()};
-
-// ---------- Vídeo corporativo ----------
-function wrap(g,s,x,y,w,lh){let l="";for(const p of s.split(" ")){if(g.measureText(l+p).width>w){g.fillText(l,x,y);y+=lh;l=""}l+=p+" "}g.fillText(l,x,y)}
-function draw(g,t,n,i,tot,p){const W=1280,H=720,gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,"#0c2d5a");gr.addColorStop(1,"#00796b");
- g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalAlpha=Math.min(1,p*4);g.fillStyle="#fff";g.font="bold 54px Segoe UI";wrap(g,t,80,200+(1-Math.min(1,p*4))*30,1120,64);
- g.font="30px Segoe UI";g.fillStyle="#e0f2f1";wrap(g,n,80,400,1120,42);g.globalAlpha=1;g.fillStyle="#ffffff40";g.fillRect(0,H-12,W,12);
- g.fillStyle="#fff";g.fillRect(0,H-12,W*((i+p)/tot),12);g.font="20px Segoe UI";g.fillText(`${i+1}/${tot}`,W-90,H-30)}
-$("bVid").onclick=async()=>{st("Criando roteiro...");
- const r=await ask([{role:"user",content:`Transforme o texto em 5 a 7 slides de vídeo corporativo explicativo. Uma linha por slide, formato: TÍTULO || NARRAÇÃO (2 frases). Use somente o conteúdo do texto. Sem numeração.\n\n${$("vt").value}`}]);
- const sl=r.split("\n").filter(l=>l.includes("||")).map(l=>l.split("||").map(s=>s.replace(/[*#]/g,"").trim()));
- if(!sl.length)return st("Não consegui montar o roteiro, tente novamente.");
- const cv=$("cv"),g=cv.getContext("2d"),rec=new MediaRecorder(cv.captureStream(30),{mimeType:"video/webm"}),parts=[];
- rec.ondataavailable=e=>parts.push(e.data);rec.start();st("🎬 Gravando (mantenha esta aba visível)...");
- for(let i=0;i<sl.length;i++){const[t,n]=sl[i],dur=Math.max(4,n.split(" ").length/2.5)*1000,t0=performance.now();
-  const u=new SpeechSynthesisUtterance(n);u.lang="pt-BR";speechSynthesis.speak(u);
-  await new Promise(res=>{const f=()=>{const p=(performance.now()-t0)/dur;draw(g,t,n,i,sl.length,Math.min(p,1));p<1?requestAnimationFrame(f):res()};f()})}
- rec.stop();await new Promise(r=>rec.onstop=r);
- const a=$("dl");a.href=URL.createObjectURL(new Blob(parts,{type:"video/webm"}));a.download="apresentacao.webm";a.textContent="⬇ Baixar vídeo";st("✅ Vídeo pronto")};
-
-// ---------- Exportar / importar caso criptografado (AES-256) ----------
+/* EXPORTAR / IMPORTAR */
 async function key(pw,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
- return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:200000,hash:"SHA-256"},k,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:200000,hash:"SHA-256"},k,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
 const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
-$("bExp").onclick=async()=>{if(!cur)return alert("Abra um caso");const pw=prompt("Crie uma senha para proteger o arquivo:");if(!pw)return;
- const c=(await cases()).find(x=>x.id===cur),fl=await get("files:"+cur)||[],blobs={};for(const f of fl)blobs[f.id]=await b64(await get("blob:"+f.id));
- const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
- const enc=await crypto.subtle.encrypt({name:"AES-GCM",iv},await key(pw,salt),new TextEncoder().encode(JSON.stringify({c,fl,blobs})));
- const a=el("a");a.href=URL.createObjectURL(new Blob([salt,iv,enc]));a.download=c.name+".caso";a.click()};
-$("bImp").onclick=()=>$("imp").click();
-$("imp").onchange=async e=>{const buf=new Uint8Array(await e.target.files[0].arrayBuffer()),pw=prompt("Senha do arquivo:");e.target.value="";
- try{const d=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:buf.slice(16,28)},await key(pw,buf.slice(0,16)),buf.slice(28))));
-  d.c.access=[...new Set([...d.c.access,me.email])];await set("cases",(await cases()).filter(x=>x.id!==d.c.id).concat(d.c));
-  await set("files:"+d.c.id,d.fl);for(const[id,u]of Object.entries(d.blobs))await set("blob:"+id,await(await fetch(u)).blob());
-  renderCases();alert("✅ Caso importado")}catch{alert("Senha incorreta ou arquivo inválido")}};
-
-// ---------- Abas ----------
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>["tChat","tFlow","tVid"].forEach(s=>$(s).classList.toggle("hide",s!==b.dataset.t)));
+$("exportBtn").onclick=async()=>{const pw=prompt("Crie uma senha para este arquivo:");if(!pw)return;const fs=await get("files_"+cur.id)||[],blobs={};
+for(const f of fs)blobs[f.id]=await b64(await get("blob_"+f.id));const data=new TextEncoder().encode(JSON.stringify({name:cur.name,fs,blobs})),salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+dl(new Blob([salt,iv,await crypto.subtle.encrypt({name:"AES-GCM",iv},await key(pw,salt),data)]),cur.name+".caso")};
+$("importBtn").onclick=()=>$("importFile").click();
+$("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;const pw=prompt("Senha do arquivo:");const b=new Uint8Array(await f.arrayBuffer());
+try{const d=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(16,28)},await key(pw,b.slice(0,16)),b.slice(28))));
+const cs=await get("cases")||[],c={id:crypto.randomUUID(),name:d.name,access:owner()?[]:[me.email]};cs.push(c);await set("cases",cs);
+for(const x of d.fs)await set("blob_"+x.id,await(await fetch(d.blobs[x.id])).blob());await set("files_"+c.id,d.fs);openCase(c.id);alert("✅ Caso importado")}
+catch(err){alert("Senha incorreta ou arquivo inválido.")}e.target.value=""};
 </script></body></html>
