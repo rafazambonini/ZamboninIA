@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><script src="https://myhub.ia.br/canvas-vendor/tailwind.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZamboninIA</title>
+  <meta name="theme-color" content="#07182b">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307182b'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='48' font-weight='700' fill='%23c18a59'%3EZ%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --navy: #07182b;
+      --navy-2: #0c2440;
+      --navy-3: #183653;
+      --wood: #a76d3d;
+      --wood-light: #c18a59;
+      --cream: #f4eee6;
+      --bg: #f4f6f8;
+      --white: #fff;
+      --line: #dce3e9;
+      --text: #172638;
+      --muted: #657487;
+      --danger: #b42318;
+      --success: #16794b;
+      --shadow: 0 10px 30px rgba(7, 24, 43, .08);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+      font: 15px/1.5 Inter, Arial, sans-serif;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    .notice { padding: 12px 14px; border-radius: 10px; margin: 12px 0; }
+    .notice.error { color: #842029; background: #f8d7da; }
+    .notice.success { color: #0f5132; background: #d1e7dd; }
+    .notice.info { color: #084298; background: #cfe2ff; }
+
+    input, textarea, select {
+      width: 100%;
+      margin: 6px 0 14px;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--text);
+      background: white;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: 3px solid rgba(167, 109, 61, .18);
+      border-color: var(--wood);
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    label {
+      display: block;
+      color: #526174;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 16px;
+      color: white;
+      background: var(--wood);
+      font-weight: 700;
+      transition: .18s ease;
+    }
+    button:hover { background: var(--wood-light); transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: wait; transform: none; }
+    .btn-secondary { color: var(--navy); background: #edf1f4; border: 1px solid var(--line); }
+    .btn-secondary:hover { background: #e1e8ee; }
+    .btn-danger { background: var(--danger); }
+    .btn-small { padding: 7px 10px; font-size: 13px; }
+
+    /* Acesso */
+    #authView {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(320px, 1.1fr) minmax(350px, .9fr);
+      background: var(--navy);
+    }
+    .brand-panel {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 24px;
+      background: var(--navy);
+    }
+    .brand-panel img {
+      display: block;
+      width: min(94%, 900px);
+      height: min(90vh, 900px);
+      object-fit: contain;
+      object-position: center;
+    }
+    .auth-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 42px 28px;
+      background: #fff;
+    }
+    .auth-box { width: 100%; max-width: 420px; }
+    .auth-box h1 { margin: 0; color: var(--navy); font-size: 30px; }
+    .auth-box p { margin: 7px 0 24px; color: var(--muted); }
+    .auth-tabs { display: flex; gap: 8px; margin: 0 0 22px; border-bottom: 1px solid var(--line); }
+    .auth-tabs button {
+      color: var(--muted);
+      background: transparent;
+      border-radius: 0;
+      border-bottom: 3px solid transparent;
+      padding: 10px 12px;
+    }
+    .auth-tabs button.active { color: var(--navy); border-color: var(--wood); }
+    .auth-box form > button { width: 100%; margin-top: 5px; }
+
+    /* Aplicação */
+    #appView { min-height: 100vh; display: grid; grid-template-columns: 260px 1fr; }
+    aside {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: var(--cream);
+      background:
+        linear-gradient(90deg, rgba(7,24,43,.98), rgba(12,36,64,.97)),
+        repeating-linear-gradient(90deg, transparent 0 28px, rgba(167,109,61,.18) 29px 32px);
+      border-right: 4px solid var(--wood);
+    }
+    .side-brand {
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .side-brand img { display: block; width: min(100%, 230px); height: 94px; object-fit: contain; }
+    nav { padding: 14px 12px; flex: 1; }
+    nav button {
+      width: 100%;
+      display: block;
+      text-align: left;
+      margin: 4px 0;
+      padding: 11px 13px;
+      color: #d5dce4;
+      background: transparent;
+      border: 1px solid transparent;
+      font-weight: 600;
+    }
+    nav button:hover, nav button.active {
+      color: white;
+      background: rgba(255,255,255,.08);
+      border-color: rgba(193,138,89,.4);
+      transform: none;
+    }
+    nav button.active { border-left: 3px solid var(--wood-light); }
+    .side-user { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); }
+    .side-user strong { display: block; color: white; }
+    .side-user .muted { color: #b9c5d1; overflow-wrap: anywhere; }
+    .side-user button { width: 100%; margin-top: 12px; }
+
+    main { min-width: 0; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 28px;
+      background: rgba(255,255,255,.97);
+      border-bottom: 1px solid var(--line);
+    }
+    header h1 { margin: 0; color: var(--navy); font-size: 21px; }
+    #status { color: var(--success); font-size: 13px; font-weight: 700; }
+    .content { max-width: 1480px; margin: 0 auto; padding: 26px 28px 48px; }
+    .page-title { color: var(--navy); margin: 0 0 8px; }
+    .card {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: var(--shadow);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+    .hero {
+      padding: 28px;
+      margin-bottom: 20px;
+      border-radius: var(--radius);
+      color: var(--cream);
+      background: linear-gradient(120deg, var(--navy), var(--navy-3));
+      border-left: 5px solid var(--wood);
+      box-shadow: var(--shadow);
+    }
+    .hero h2 { color: white; margin: 0 0 8px; font-size: 25px; }
+    .stat b { display: block; margin-top: 6px; color: var(--navy); font-size: 32px; }
+    .two-col { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .case-list { display: grid; gap: 8px; margin-top: 12px; }
+    .case-item {
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      color: var(--navy);
+      background: white;
+      border: 1px solid var(--line);
+    }
+    .case-item.selected { border-color: var(--wood); background: #fbf7f2; }
+    .case-item:hover { background: #f3f6f8; transform: none; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .toolbar select { width: auto; min-width: 180px; margin: 0; }
+    .chat-log {
+      min-height: 300px;
+      max-height: 55vh;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 4px;
+    }
+    .message {
+      max-width: 88%;
+      padding: 13px 15px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .message.user { align-self: flex-end; color: white; background: var(--navy-2); }
+    .message.assistant { align-self: flex-start; background: #fff; border: 1px solid var(--line); }
+    .message .sources { margin-top: 12px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 13px; }
+    .message .sources a { display: block; color: #875323; margin-top: 5px; }
+    .composer { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+    .composer textarea { min-height: 54px; margin: 0; }
+    .file-row, .user-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .help h3 { color: var(--navy); margin-bottom: 5px; }
+    .help section { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .help section:last-child { border-bottom: 0; }
+
+    @media (max-width: 850px) {
+      #authView { grid-template-columns: 1fr; }
+      .brand-panel { min-height: 46vh; padding: 12px; }
+      .brand-panel img { width: min(88vw, 440px); height: min(44vh, 440px); }
+      #appView { grid-template-columns: 1fr; }
+      aside { min-height: auto; }
+      .side-brand { min-height: 88px; }
+      .side-brand img { width: 180px; height: 76px; }
+      nav { display: grid; grid-template-columns: repeat(2, 1fr); padding: 8px; }
+      nav button { font-size: 13px; padding: 9px; }
+      .side-user { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .side-user button { width: auto; margin: 0; }
+      header { padding: 13px 16px; }
+      .content { padding: 18px 14px 32px; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .auth-panel { padding: 28px 20px; }
+      .composer { grid-template-columns: 1fr; }
+      .composer button { width: 100%; }
+      .message { max-width: 96%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="authView">
+    <div class="brand-panel" aria-label="Identidade visual ZamboninIA">
+      <img src="https://d31zra5bs5df64.cloudfront.net/prod/3EuouvJzxWqz08v6fqxwNksVIV8/chat/3LyI1GMqZ84xVJBQ4KICkYwepzj/3M3qboBC2bctWfFJ3EcTfRYKSAY.png?Expires=1794593272&Key-Pair-Id=K2FT0I8VPJSP5H&Signature=b45kqIveysdrMscjpTr-l0xjcni72pgpUqkUOM26blWA4Jo64k4uL7XxLjyvcfHHkBCFQSQILudWKd9CRawxHU59ddRiS~IfJ7T~bJcCodAMeQ~ioosstYTwhFCvf1Lk~ydT5vy8adcCRanqFzuF8Zhmw7O4UEtaP4tVY4U2ah1akAvgA~J7L8ApVgOSc5HsfyPOyoCHw-trizA9quTEyHRWcGO1AHtrBZNlWDZ0wQj3R34E9opMLMLR6s88JiaUdXodwWsrvmGKU3OQo21Vs35GzDePjHgGuz9bBNTvHVIvTOyERWYgfUlyuqe93bqcF3jaR1vlUAdY8lyQPC6GWw__" alt="Logo ZamboninIA" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='logo.png.jpg'}else if(this.dataset.fallback==='1'){this.dataset.fallback='2';this.src='logo.png'}else{this.style.display='none'}">
+    </div>
+    <div class="auth-panel">
+      <div class="auth-box">
+        <h1>ZamboninIA</h1>
+
+        <div class="auth-tabs">
+          <button id="tabLogin" class="active" type="button">Entrar</button>
+          <button id="tabSignup" type="button">Solicitar acesso</button>
+        </div>
+
+        <form id="loginForm">
+          <label for="loginEmail">E-mail cadastrado</label>
+          <input id="loginEmail" type="email" autocomplete="email" required>
+          <label for="loginPassword">Senha</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required>
+          <button id="loginButton" type="submit">Entrar</button>
+        </form>
+
+        <form id="signupForm" class="hidden">
+          <label for="signupName">Nome completo</label>
+          <input id="signupName" type="text" autocomplete="name" required>
+          <label for="signupEmail">E-mail</label>
+          <input id="signupEmail" type="email" autocomplete="email" required>
+          <label for="signupPassword">Criar senha</label>
+          <input id="signupPassword" type="password" autocomplete="new-password" minlength="8" required>
+          <button id="signupButton" type="submit">Solicitar acesso</button>
+          <p class="small muted">O perfil será criado como pendente e só poderá usar a plataforma após aprovação do administrador.</p>
+        </form>
+        <div id="authMessage" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pendingView" class="hidden">
+    <div class="auth-panel" style="min-height:100vh">
+      <div class="auth-box card">
+        <h1>Acesso aguardando aprovação</h1>
+        <p>Sua solicitação foi registrada. O acesso será liberado após a aprovação do administrador.</p>
+        <div id="pendingMessage"></div>
+        <button id="pendingLogout" class="btn-secondary" type="button">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <aside>
+      <div class="side-brand"><img src="https://d31zra5bs5df64.cloudfront.net/prod/3EuouvJzxWqz08v6fqxwNksVIV8/chat/3LyI1GMqZ84xVJBQ4KICkYwepzj/3M3qboBC2bctWfFJ3EcTfRYKSAY.png?Expires=1794593272&Key-Pair-Id=K2FT0I8VPJSP5H&Signature=b45kqIveysdrMscjpTr-l0xjcni72pgpUqkUOM26blWA4Jo64k4uL7XxLjyvcfHHkBCFQSQILudWKd9CRawxHU59ddRiS~IfJ7T~bJcCodAMeQ~ioosstYTwhFCvf1Lk~ydT5vy8adcCRanqFzuF8Zhmw7O4UEtaP4tVY4U2ah1akAvgA~J7L8ApVgOSc5HsfyPOyoCHw-trizA9quTEyHRWcGO1AHtrBZNlWDZ0wQj3R34E9opMLMLR6s88JiaUdXodwWsrvmGKU3OQo21Vs35GzDePjHgGuz9bBNTvHVIvTOyERWYgfUlyuqe93bqcF3jaR1vlUAdY8lyQPC6GWw__" alt="Logo ZamboninIA" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='logo.png.jpg'}else if(this.dataset.fallback==='1'){this.dataset.fallback='2';this.src='logo.png'}else{this.style.display='none'}"></div>
+      <nav id="nav">
+        <button data-page="home" class="active">Painel principal</button>
+        <button data-page="cases">Casos e conversas</button>
+        <button data-page="media">Mídias</button>
+        <button data-page="howto">Como usar</button>
+        <button data-page="admin" id="adminNav" class="hidden">Aprovações</button>
+        <button data-page="settings">Configurações</button>
+      </nav>
+      <div class="side-user">
+        <div><strong id="userName"></strong><span id="userEmail" class="muted small"></span></div>
+        <button id="logoutButton" class="btn-secondary btn-small" type="button">Sair</button>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <h1 id="pageHeading">Painel principal</h1>
+        <span id="status">Conectando</span>
+      </header>
+
+      <div class="content">
+        <section id="page-home" class="page">
+          <div class="hero">
+            <h2 id="welcome">Bem-vindo(a)</h2>
+            <div>Ambiente de apoio à análise documental, contábil, econômica e jurídica.</div>
+          </div>
+          <div class="grid">
+            <div class="card stat"><span class="muted">Casos disponíveis</span><b id="caseCount">0</b></div>
+            <div class="card stat"><span class="muted">Conversas salvas</span><b id="conversationCount">0</b></div>
+            <div class="card stat"><span class="muted">Perfil</span><b id="roleLabel" style="font-size:20px">Usuário</b></div>
+          </div>
+          <div class="card" style="margin-top:18px">
+            <h2 class="page-title">Acesso rápido</h2>
+            <p class="muted">Abra a aba “Casos e conversas” para consultar seu histórico, iniciar um caso ou usar sua conversa particular.</p>
+            <button type="button" data-goto="cases">Abrir casos e conversas</button>
+          </div>
+        </section>
+
+        <section id="page-cases" class="page hidden">
+          <div class="two-col">
+            <div>
+              <div class="card">
+                <h2 class="page-title" style="font-size:18px">Novo caso</h2>
+                <label for="newCaseName">Nome do caso</label>
+                <input id="newCaseName" placeholder="Ex.: Revisão de contrato">
+                <button id="createCaseButton" type="button">Criar caso</button>
+              </div>
+              <div class="card" style="margin-top:14px">
+                <h2 class="page-title" style="font-size:18px">Particular e casos</h2>
+                <p class="muted small">A conversa particular e o histórico de cada usuário são privados. O administrador também pode consultar os registros conforme as permissões configuradas no Supabase.</p>
+                <div id="caseList" class="case-list"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <div style="flex:1;min-width:170px">
+                  <h2 id="currentChatTitle" class="page-title" style="font-size:19px;margin:0">Selecione uma conversa</h2>
+                  <span id="chatSubtitle" class="muted small"></span>
+                </div>
+                <select id="answerStyle" aria-label="Estilo da resposta">
+                  <option value="centrado">Centrado — resposta direta</option>
+                  <option value="enxerido">Enxerido — contexto detalhado</option>
+                </select>
+                <select id="sourceMode" aria-label="Fonte da resposta">
+                  <option value="files">Arquivos do caso</option>
+                  <option value="web">Pesquisar na web</option>
+                </select>
+              </div>
+
+              <div id="fileArea" class="hidden" style="margin-top:16px">
+                <label for="caseFiles">Adicionar documentos ao caso</label>
+                <input id="caseFiles" type="file" multiple accept=".txt,.md,.csv,.json,.pdf,.docx,.xlsx,.xls">
+                <div id="fileList" class="small"></div>
+              </div>
+
+              <div id="chatLog" class="chat-log" aria-live="polite"></div>
+              <form id="chatForm" class="composer">
+                <textarea id="chatInput" placeholder="Escreva sua pergunta. Use Enter para enviar e Shift+Enter para nova linha." required></textarea>
+                <button id="sendButton" type="submit">Enviar</button>
+              </form>
+              <p class="muted small">As respostas devem ser conferidas em documentos e fontes oficiais. A ferramenta não substitui revisão profissional.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="page-media" class="page hidden">
+          <div class="card" style="max-width:900px">
+            <h2 class="page-title">Mídias e análise visual</h2>
+            <p class="muted">Envie uma imagem e descreva o que precisa ser examinado. A análise depende de uma chave de API Gemini configurada nesta sessão.</p>
+            <label for="mediaFile">Imagem</label>
+            <input id="mediaFile" type="file" accept="image/*">
+            <img id="mediaPreview" class="hidden" alt="Pré-visualização" style="max-width:100%;max-height:320px;border-radius:10px;margin:8px 0 16px">
+            <label for="mediaPrompt">Solicitação</label>
+            <textarea id="mediaPrompt" placeholder="Ex.: transcreva os dados visíveis e indique limitações da imagem."></textarea>
+            <button id="analyzeMediaButton" type="button">Analisar imagem</button>
+            <div id="mediaResult" class="card hidden" style="margin-top:16px;white-space:pre-wrap"></div>
+            <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+            <h3>Prompt para criação de mídia</h3>
+            <p class="muted">Descreva a imagem ou o vídeo desejado e copie o prompt para uma ferramenta de geração de mídia. Esta página não gera vídeos por conta própria.</p>
+            <textarea id="creationPrompt" placeholder="Descreva objetivo, público, estilo visual, duração e elementos obrigatórios."></textarea>
+            <button id="copyPromptButton" type="button" class="btn-secondary">Copiar prompt</button>
+          </div>
+        </section>
+
+        <section id="page-howto" class="page hidden">
+          <div class="card help">
+            <h2 class="page-title">Como usar a ZamboninIA</h2>
+            <section>
+              <h3>1. Acesso e aprovação</h3>
+              <p>Quem ainda não possui conta deve selecionar “Solicitar acesso”, informar nome completo, e-mail e senha. O administrador aprova ou rejeita o perfil na aba “Aprovações”. A conta pendente não acessa os casos nem as conversas.</p>
+            </section>
+            <section>
+              <h3>2. Conversa particular</h3>
+              <p>Na aba “Casos e conversas”, selecione “Particular — seu nome” para perguntas gerais. O histórico fica vinculado à conta e é carregado novamente ao entrar. Não inclua dados confidenciais sem autorização institucional.</p>
+            </section>
+            <section>
+              <h3>3. Casos e documentos</h3>
+              <p>Crie um caso, selecione-o e adicione documentos. A leitura de PDF, DOCX e planilhas depende do formato e de o arquivo conter texto extraível; documentos digitalizados podem exigir OCR. Faça perguntas no contexto do caso e escolha “Arquivos do caso” como fonte.</p>
+            </section>
+            <section>
+              <h3>4. Pesquisa na web</h3>
+              <p>Selecione “Pesquisar na web” para solicitar pesquisa com referências quando o modelo e a API configurados oferecerem suporte. Verifique datas, links e documentos oficiais antes de usar os dados em relatório ou parecer.</p>
+            </section>
+            <section>
+              <h3>5. Estilo das respostas</h3>
+              <p>“Centrado” prioriza uma conclusão direta. “Enxerido” acrescenta contexto, ressalvas e explicações. A plataforma não exibe raciocínio privado detalhado; pode apresentar síntese do método, fundamentos e limitações.</p>
+            </section>
+            <section>
+              <h3>6. Mídias</h3>
+              <p>Na aba “Mídias”, solicite análise de uma imagem. A interpretação pode falhar por baixa resolução, cortes ou ausência de contexto. Para criar imagens ou vídeos, use o prompt preparado na ferramenta de geração apropriada.</p>
+            </section>
+            <section>
+              <h3>7. Limites e revisão</h3>
+              <p>Respostas de IA podem conter erros ou omissões. Confira cálculos, citações, normas vigentes e fontes primárias. Em matéria técnica, contábil ou jurídica, a decisão final deve ser revisada pelo profissional responsável.</p>
+            </section>
+          </div>
+        </section>
+
+        <section id="page-admin" class="page hidden">
+          <div class="card">
+            <h2 class="page-title">Solicitações de acesso</h2>
+            <p class="muted">Aprove ou rejeite os perfis pendentes. A função de administrador não é concedida por esta tela.</p>
+            <label for="authorizeEmail">Autorizar acesso pelo e-mail</label>
+            <div class="toolbar">
+              <input id="authorizeEmail" type="email" autocomplete="email" placeholder="nome@empresa.com.br" style="flex:1;min-width:220px;margin:0">
+              <button id="authorizeEmailButton" type="button">Autorizar e-mail</button>
+            </div>
+            <div id="authorizeEmailMessage" aria-live="polite"></div>
+            <div id="adminUsers"></div>
+          </div>
+        </section>
+
+        <section id="page-settings" class="page hidden">
+          <div class="card" style="max-width:760px">
+            <h2 class="page-title">Configurações desta sessão</h2>
+            <p class="muted">A chave Gemini é mantida somente na memória desta página e desaparece ao recarregar. Para uso corporativo, não exponha chaves de API em um site público; use uma função de servidor (Supabase Edge Function) para intermediar chamadas.</p>
+            <label for="geminiKey">Chave Gemini</label>
+            <input id="geminiKey" type="password" autocomplete="off" placeholder="Cole a chave somente em ambiente controlado">
+            <label for="geminiModel">Modelo configurado</label>
+            <input id="geminiModel" value="gemini-2.5-flash">
+            <button id="saveAiSettings" type="button">Aplicar nesta sessão</button>
+            <div id="settingsMessage"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const tabLogin = document.getElementById("tabLogin");
+      const tabSignup = document.getElementById("tabSignup");
+      const authMessage = document.getElementById("authMessage");
+
+      function showTab(mode) {
+        const isLogin = mode === "login";
+        loginForm.classList.toggle("hidden", !isLogin);
+        signupForm.classList.toggle("hidden", isLogin);
+        tabLogin.classList.toggle("active", isLogin);
+        tabSignup.classList.toggle("active", !isLogin);
+        authMessage.replaceChildren();
+      }
+
+      tabLogin.addEventListener("click", () => showTab("login"));
+      tabSignup.addEventListener("click", () => showTab("signup"));
+
+      // Impede que o formulário recarregue a página se o módulo não iniciar.
+      // Não interrompe os manipuladores de autenticação do módulo.
+      [loginForm, signupForm].forEach(form => {
+        form.addEventListener("submit", event => event.preventDefault(), true);
+      });
+
+      window.__zamboninAuthReady = false;
+      window.addEventListener("unhandledrejection", event => {
+        if (window.__zamboninAuthReady) return;
+        authMessage.className = "notice error";
+        authMessage.textContent =
+          "O módulo de acesso não conseguiu iniciar. Verifique a conexão e recarregue a página. Detalhe: " +
+          (event.reason?.message || String(event.reason || "erro de carregamento"));
+      });
+    })();
+  </script>
+
+  <script type="module">
+    /*
+      CONFIGURAÇÃO OBRIGATÓRIA:
+      1. Troque SUPABASE_URL pela URL do projeto.
+      2. Troque SUPABASE_ANON_KEY pela chave pública (anon/publishable).
+      Nunca coloque a service_role key no HTML.
+    */
+    const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
+    const SUPABASE_ANON_KEY = "SUA_CHAVE_PUBLICA_SUPABASE";
+
+    let createClient;
+    try {
+      ({ createClient } = await import("https://esm.sh/@supabase/supabase-js@2"));
+    } catch (firstImportError) {
+      try {
+        ({ createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"));
+      } catch (fallbackImportError) {
+        throw new Error(
+          "Não foi possível carregar a biblioteca do Supabase. " +
+          (fallbackImportError.message || firstImportError.message)
+        );
+      }
+    }
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const $ = id => document.getElementById(id);
+    const state = {
+      user: null,
+      profile: null,
+      currentCase: null,
+      currentConversation: null,
+      particularConversation: null,
+      apiKey: "",
+      model: "gemini-2.5-flash",
+      busy: false
+    };
+
+    const pageNames = {
+      home: "Painel principal",
+      cases: "Casos e conversas",
+      media: "Mídias",
+      howto: "Como usar",
+      admin: "Aprovações",
+      settings: "Configurações"
+    };
+
+    function setStatus(text, isError = false) {
+      $("status").textContent = text;
+      $("status").style.color = isError ? "var(--danger)" : "var(--success)";
+    }
+
+    function messageBox(el, text, kind = "info") {
+      el.className = "notice " + kind;
+      el.textContent = text;
+    }
+
+    function showAuthTab(which) {
+      const login = which === "login";
+      $("loginForm").classList.toggle("hidden", !login);
+      $("signupForm").classList.toggle("hidden", login);
+      $("tabLogin").classList.toggle("active", login);
+      $("tabSignup").classList.toggle("active", !login);
+      $("authMessage").replaceChildren();
+    }
+    $("tabLogin").onclick = () => showAuthTab("login");
+    $("tabSignup").onclick = () => showAuthTab("signup");
+
+    function navigate(page) {
+      document.querySelectorAll(".page").forEach(el => el.classList.add("hidden"));
+      $("page-" + page).classList.remove("hidden");
+      $("pageHeading").textContent = pageNames[page] || "ZamboninIA";
+      document.querySelectorAll("#nav button[data-page]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.page === page);
+      });
+      if (page === "cases") refreshCases();
+      if (page === "admin") loadAdminUsers();
+      if (page === "home") refreshDashboard();
+    }
+
+    $("nav").addEventListener("click", event => {
+      const button = event.target.closest("button[data-page]");
+      if (button && !button.classList.contains("hidden")) navigate(button.dataset.page);
+    });
+    document.querySelectorAll("[data-goto]").forEach(btn => btn.onclick = () => navigate(btn.dataset.goto));
+
+    async function getMyProfile(user) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, status")
+        .eq("id", user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    async function displayForUser(user) {
+      state.user = user;
+      let profile;
+      try {
+        profile = await getMyProfile(user);
+      } catch (error) {
+        $("authView").classList.remove("hidden");
+        messageBox($("authMessage"), "Não foi possível carregar o perfil. Confira se o SQL preparatório e o SQL de segurança foram executados no Supabase. Detalhe: " + error.message, "error");
+        return;
+      }
+      state.profile = profile;
+
+      if (profile.status !== "approved") {
+        $("authView").classList.add("hidden");
+        $("appView").classList.add("hidden");
+        $("pendingView").classList.remove("hidden");
+        $("pendingMessage").className = "notice info";
+        $("pendingMessage").textContent =
+          profile.status === "rejected"
+            ? "Sua solicitação foi recusada. Entre em contato com o administrador."
+            : "Sua solicitação está pendente de análise.";
+        return;
+      }
+
+      $("authView").classList.add("hidden");
+      $("pendingView").classList.add("hidden");
+      $("appView").classList.remove("hidden");
+      const registeredName =
+        profile.full_name ||
+        user.user_metadata?.full_name ||
+        user.email?.split("@")[0] ||
+        "usuário";
+      const firstName = registeredName.trim().split(/\s+/)[0] || "usuário";
+      $("userName").textContent = registeredName;
+      $("userEmail").textContent = profile.email || user.email || "";
+      $("welcome").textContent = "Bem-vindo(a), " + firstName + ".";
+      const admin = profile.role === "admin";
+      $("roleLabel").textContent = admin ? "Administrador" : "Usuário aprovado";
+      $("adminNav").classList.toggle("hidden", !admin);
+      setStatus("Conectado");
+      await loadParticularConversation();
+      await refreshCases();
+      await refreshDashboard();
+      navigate("home");
+    }
+
+    $("loginForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = $("loginButton");
+      button.disabled = true;
+      $("authMessage").replaceChildren();
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: $("loginEmail").value.trim(),
+          password: $("loginPassword").value
+        });
+        if (error) throw error;
+        await displayForUser(data.user);
+      } catch (error) {
+        messageBox($("authMessage"), "Não foi possível entrar. Confira o e-mail e a senha. " + error.message, "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    $("signupForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = $("signupButton");
+      button.disabled = true;
+      $("authMessage").replaceChildren();
+      try {
+        const fullName = $("signupName").value.trim();
+        const email = $("signupEmail").value.trim().toLowerCase();
+        const password = $("signupPassword").value;
+        if (fullName.length < 2) throw new Error("Informe seu nome completo.");
+        if (password.length < 8) throw new Error("A senha precisa ter pelo menos 8 caracteres.");
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } }
+        });
+        if (error) throw error;
+
+        if (data.session && data.user) {
+          await displayForUser(data.user);
+        } else {
+          messageBox(
+            $("authMessage"),
+            "Solicitação enviada. Confira o e-mail para confirmar a conta, se a confirmação estiver habilitada. Após a confirmação, o administrador poderá aprovar o acesso.",
+            "success"
+          );
+          $("signupForm").reset();
+        }
+      } catch (error) {
+        messageBox($("authMessage"), "Não foi possível enviar a solicitação. " + error.message, "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    window.__zamboninAuthReady = true;
+
+    async function signOut() {
+      await supabase.auth.signOut();
+      state.user = null;
+      state.profile = null;
+      state.currentCase = null;
+      state.currentConversation = null;
+      $("appView").classList.add("hidden");
+      $("pendingView").classList.add("hidden");
+      $("authView").classList.remove("hidden");
+      showAuthTab("login");
+    }
+    $("logoutButton").onclick = signOut;
+    $("pendingLogout").onclick = signOut;
+
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user && !state.user) await displayForUser(session.user);
+      if (!session?.user && state.user) {
+        state.user = null;
+        $("appView").classList.add("hidden");
+        $("pendingView").classList.add("hidden");
+        $("authView").classList.remove("hidden");
+      }
+    });
+
+    async function loadParticularConversation() {
+      const title = "Particular - " + (state.profile.full_name || state.profile.email);
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("id, title, kind, case_id, created_at")
+        .eq("owner_id", state.user.id)
+        .eq("kind", "personal")
+        .eq("title", title)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (error) throw error;
+
+      if (data?.length) {
+        state.particularConversation = data[0];
+      } else {
+        const { data: created, error: createError } = await supabase
+          .from("conversations")
+          .insert({
+            owner_id: state.user.id,
+            kind: "personal",
+            case_id: null,
+            title
+          })
+          .select("id, title, kind, case_id, created_at")
+          .single();
+        if (createError) throw createError;
+        state.particularConversation = created;
+      }
+    }
+
+    async function getOrCreateCaseConversation(caseItem) {
+      const title = "Chat do caso";
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("id, title, kind, case_id, created_at")
+        .eq("owner_id", state.user.id)
+        .eq("case_id", caseItem.id)
+        .eq("kind", "case")
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      if (data?.length) return data[0];
+
+      const { data: created, error: createError } = await supabase
+        .from("conversations")
+        .insert({
+          owner_id: state.user.id,
+          kind: "case",
+          case_id: caseItem.id,
+          title
+        })
+        .select("id, title, kind, case_id, created_at")
+        .single();
+      if (createError) throw createError;
+      return created;
+    }
+
+    async function refreshCases() {
+      if (!state.user || !state.profile || state.profile.status !== "approved") return;
+      const { data, error } = await supabase
+        .from("cases")
+        .select("id, name, owner_id, created_at")
+        .order("created_at", { ascending: false });
+      if (error) {
+        setStatus("Falha ao carregar casos", true);
+        console.error(error);
+        return;
+      }
+
+      const list = $("caseList");
+      list.replaceChildren();
+
+      const particularButton = document.createElement("button");
+      particularButton.className = "case-item" + (!state.currentCase ? " selected" : "");
+      particularButton.textContent = "Particular — " + (state.profile.full_name || state.profile.email);
+      particularButton.onclick = () => openParticular();
+      list.append(particularButton);
+
+      (data || []).forEach(item => {
+        const button = document.createElement("button");
+        button.className = "case-item" + (state.currentCase?.id === item.id ? " selected" : "");
+        button.textContent = "Caso — " + item.name;
+        button.onclick = () => openCase(item);
+        list.append(button);
+      });
+      $("caseCount").textContent = String((data || []).length);
+    }
+
+    $("createCaseButton").onclick = async () => {
+      const name = $("newCaseName").value.trim();
+      if (!name) return;
+      const button = $("createCaseButton");
+      button.disabled = true;
+      try {
+        const { data, error } = await supabase
+          .from("cases")
+          .insert({ owner_id: state.user.id, name })
+          .select("id, name, owner_id, created_at")
+          .single();
+        if (error) throw error;
+        $("newCaseName").value = "";
+        await openCase(data);
+        await refreshDashboard();
+      } catch (error) {
+        alert("Não foi possível criar o caso: " + error.message);
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    async function openParticular() {
+      state.currentCase = null;
+      state.currentConversation = state.particularConversation;
+      $("currentChatTitle").textContent = state.particularConversation.title;
+      $("chatSubtitle").textContent = "Conversa pessoal privada";
+      $("fileArea").classList.add("hidden");
+      $("sourceMode").value = "web";
+      $("sourceMode").disabled = false;
+      await loadMessages();
+      await refreshCases();
+    }
+
+    async function openCase(caseItem) {
+      try {
+        state.currentCase = caseItem;
+        state.currentConversation = await getOrCreateCaseConversation(caseItem);
+        $("currentChatTitle").textContent = caseItem.name;
+        $("chatSubtitle").textContent = "Conversa vinculada ao caso";
+        $("fileArea").classList.remove("hidden");
+        $("sourceMode").value = "files";
+        $("sourceMode").disabled = false;
+        await loadMessages();
+        await loadDocuments();
+        await refreshCases();
+      } catch (error) {
+        alert("Não foi possível abrir o caso: " + error.message);
+      }
+    }
+
+    async function loadMessages() {
+      const log = $("chatLog");
+      log.replaceChildren();
+      if (!state.currentConversation) return;
+      const { data, error } = await supabase
+        .from("messages")
+        .select("id, author_id, role, content, created_at")
+        .eq("conversation_id", state.currentConversation.id)
+        .order("created_at", { ascending: true });
+      if (error) {
+        appendMessage("assistant", "Não foi possível carregar o histórico: " + error.message);
+        return;
+      }
+      for (const row of (data || [])) {
+        appendMessage(row.role === "user" ? "user" : "assistant", row.content);
+      }
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function appendMessage(role, text, sources = []) {
+      const message = document.createElement("div");
+      message.className = "message " + role;
+      const body = document.createElement("div");
+      body.textContent = text;
+      message.append(body);
+
+      if (sources.length) {
+        const sourceBox = document.createElement("div");
+        sourceBox.className = "sources";
+        const title = document.createElement("strong");
+        title.textContent = "Fontes consultadas";
+        sourceBox.append(title);
+        sources.forEach(source => {
+          if (!source.uri) return;
+          const link = document.createElement("a");
+          link.href = source.uri;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = source.title || source.uri;
+          sourceBox.append(link);
+        });
+        message.append(sourceBox);
+      }
+
+      $("chatLog").append(message);
+      $("chatLog").scrollTop = $("chatLog").scrollHeight;
+      return message;
+    }
+
+    async function saveMessage(role, content) {
+      const { error } = await supabase.from("messages").insert({
+        conversation_id: state.currentConversation.id,
+        author_id: state.user.id,
+        role,
+        content
+      });
+      if (error) throw error;
+    }
+
+    async function extractText(file) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (["txt", "md", "csv", "json"].includes(ext)) return await file.text();
+
+      if (ext === "pdf") {
+        const pdfjs = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs");
+        pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
+        const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+        const pages = [];
+        for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+          const page = await pdf.getPage(pageNo);
+          const text = await page.getTextContent();
+          pages.push("Página " + pageNo + ": " + text.items.map(item => item.str).join(" "));
+        }
+        return pages.join("\n\n");
+      }
+
+      if (ext === "docx") {
+        const mammoth = await import("https://esm.sh/mammoth@1.8.0");
+        const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+        return result.value;
+      }
+
+      if (["xlsx", "xls"].includes(ext)) {
+        const xlsx = await import("https://esm.sh/xlsx@0.18.5");
+        const workbook = xlsx.read(await file.arrayBuffer(), { type: "array" });
+        return workbook.SheetNames.map(name =>
+          "Planilha " + name + "\n" + xlsx.utils.sheet_to_csv(workbook.Sheets[name])
+        ).join("\n\n");
+      }
+
+      throw new Error("Formato não suportado para extração de texto.");
+    }
+
+    $("caseFiles").addEventListener("change", async event => {
+      if (!state.currentCase) return;
+      const files = Array.from(event.target.files || []);
+      for (const file of files) {
+        try {
+          setStatus("Lendo " + file.name + "…");
+          const extracted = await extractText(file);
+          if (!extracted.trim()) {
+            alert(file.name + ": não foi possível extrair texto. Se for uma digitalização, será necessário OCR.");
+            continue;
+          }
+          const { error } = await supabase.from("documents").insert({
+            case_id: state.currentCase.id,
+            uploaded_by: state.user.id,
+            file_name: file.name,
+            extracted_text: extracted
+          });
+          if (error) throw error;
+        } catch (error) {
+          alert("Falha em " + file.name + ": " + error.message);
+        }
+      }
+      event.target.value = "";
+      await loadDocuments();
+      setStatus("Documentos processados");
+    });
+
+    async function loadDocuments() {
+      $("fileList").replaceChildren();
+      if (!state.currentCase) return;
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id, file_name, created_at")
+        .eq("case_id", state.currentCase.id)
+        .order("created_at", { ascending: false });
+      if (error) {
+        $("fileList").textContent = "Não foi possível consultar os documentos: " + error.message;
+        return;
+      }
+      if (!data?.length) {
+        $("fileList").textContent = "Ainda não há documentos neste caso.";
+        return;
+      }
+      data.forEach(doc => {
+        const row = document.createElement("div");
+        row.className = "file-row";
+        const name = document.createElement("span");
+        name.textContent = "Documento: " + doc.file_name;
+        row.append(name);
+        $("fileList").append(row);
+      });
+    }
+
+    async function getDocumentContext(question) {
+      if (!state.currentCase) return "";
+      const { data, error } = await supabase
+        .from("documents")
+        .select("file_name, extracted_text")
+        .eq("case_id", state.currentCase.id);
+      if (error) throw error;
+      if (!data?.length) return "";
+
+      const words = question.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(word => word.length > 2);
+      const ranked = data.map(doc => {
+        const text = doc.extracted_text || "";
+        const low = text.toLowerCase();
+        const score = words.reduce((sum, word) => sum + (low.includes(word) ? 1 : 0), 0);
+        return { ...doc, score };
+      }).sort((a, b) => b.score - a.score);
+
+      return ranked.slice(0, 4).map(doc =>
+        "Arquivo: " + doc.file_name + "\n" + (doc.extracted_text || "").slice(0, 12000)
+      ).join("\n\n---\n\n");
+    }
+
+    async function askGemini(question, context, useWeb, history) {
+      if (!state.apiKey) throw new Error("Configure uma chave Gemini na aba Configurações.");
+      const style = $("answerStyle").value;
+      const instructions = [
+        "Você é a ZamboninIA, assistente de apoio técnico em perícia econômica, direito, relações internacionais, contabilidade e áreas correlatas.",
+        "Responda em português do Brasil, com linguagem corporativa, formal, precisa e orientada a resultados.",
+        "Priorize exatidão e mitigação de riscos: explicite premissas, limitações, lacunas probatórias, riscos relevantes e pontos que exigem validação profissional.",
+        "Não invente fontes, números, normas, artigos, links ou citações. Diferencie fatos documentados, hipóteses e interpretações; quando possível, indique uma síntese verificável do método e dos fundamentos.",
+        "Seja eficiente: comece pela conclusão e inclua apenas contexto, ressalvas e próximos passos pertinentes. Não apresente raciocínio interno detalhado.",
+        style === "centrado"
+          ? "Estilo: centrado. Comece pela resposta direta e seja conciso."
+          : "Estilo: detalhado. Apresente conclusão, contexto, fundamentos, ressalvas e próximos passos pertinentes.",
+        context ? "Contexto documental do caso:\n" + context : "",
+        useWeb ? "Pesquise na web quando a ferramenta de pesquisa estiver disponível. Priorize órgãos oficiais e fontes primárias. Cite links fornecidos pela ferramenta e não afirme que pesquisou se não houver referências." : ""
+      ].filter(Boolean).join("\n\n");
+
+      const contents = history.slice(-8).map(row => ({
+        role: row.role === "assistant" ? "model" : "user",
+        parts: [{ text: row.content }]
+      }));
+      contents.push({ role: "user", parts: [{ text: question }] });
+
+      const body = {
+        systemInstruction: { parts: [{ text: instructions }] },
+        contents,
+        generationConfig: { temperature: 0.2 }
+      };
+      if (useWeb) body.tools = [{ googleSearch: {} }];
+
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" +
+        encodeURIComponent(state.model) +
+        ":generateContent?key=" + encodeURIComponent(state.apiKey),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        }
+      );
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error?.message || "Falha na chamada ao serviço de IA.");
+
+      const answer = (result.candidates?.[0]?.content?.parts || [])
+        .map(part => part.text || "")
+        .join("\n")
+        .trim();
+      if (!answer) throw new Error("O serviço de IA não retornou uma resposta textual.");
+
+      const metadata = result.candidates?.[0]?.groundingMetadata;
+      const chunks = metadata?.groundingChunks || [];
+      const sources = chunks.map(chunk => ({
+        uri: chunk.web?.uri,
+        title: chunk.web?.title
+      })).filter(source => source.uri);
+      return { answer, sources };
+    }
+
+    $("chatForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (state.busy || !state.currentConversation) {
+        if (!state.currentConversation) alert("Selecione Particular ou abra um caso antes de enviar.");
+        return;
+      }
+      const question = $("chatInput").value.trim();
+      if (!question) return;
+
+      const useWeb = $("sourceMode").value === "web";
+      const isCaseChat = Boolean(state.currentCase);
+      if (!useWeb && !isCaseChat) {
+        alert("A conversa Particular usa pesquisa na web. Selecione a fonte correspondente.");
+        return;
+      }
+
+      state.busy = true;
+      $("sendButton").disabled = true;
+      $("chatInput").value = "";
+      try {
+        appendMessage("user", question);
+        await saveMessage("user", question);
+
+        const { data: historyData, error: historyError } = await supabase
+          .from("messages")
+          .select("role, content")
+          .eq("conversation_id", state.currentConversation.id)
+          .order("created_at", { ascending: true });
+        if (historyError) throw historyError;
+
+        const context = isCaseChat && !useWeb ? await getDocumentContext(question) : "";
+        if (isCaseChat && !useWeb && !context) {
+          const answer = "Não encontrei texto extraído dos documentos deste caso para responder com base documental. Adicione um arquivo com texto legível ou selecione pesquisa na web.";
+          appendMessage("assistant", answer);
+          await saveMessage("assistant", answer);
+          return;
+        }
+
+        setStatus("Processando");
+        const response = await askGemini(
+          question,
+          context,
+          useWeb,
+          (historyData || []).slice(0, -1)
+        );
+        appendMessage("assistant", response.answer, response.sources);
+        await saveMessage("assistant", response.answer);
+        setStatus("Resposta salva");
+      } catch (error) {
+        appendMessage("assistant", "Não foi possível concluir a solicitação: " + error.message);
+        setStatus("Falha na resposta", true);
+      } finally {
+        state.busy = false;
+        $("sendButton").disabled = false;
+        $("chatInput").focus();
+      }
+    });
+
+    $("chatInput").addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        $("chatForm").requestSubmit();
+      }
+    });
+
+    async function refreshDashboard() {
+      if (!state.user) return;
+      const { data: cases } = await supabase.from("cases").select("id");
+      const { data: conversations } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("owner_id", state.user.id);
+      $("caseCount").textContent = String(cases?.length || 0);
+      $("conversationCount").textContent = String(conversations?.length || 0);
+    }
+
+    async function loadAdminUsers() {
+      if (state.profile?.role !== "admin") return;
+      const host = $("adminUsers");
+      host.textContent = "Carregando…";
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, status, created_at")
+        .order("created_at", { ascending: false });
+      if (error) {
+        host.textContent = "Não foi possível carregar os perfis: " + error.message;
+        return;
+      }
+      host.replaceChildren();
+      const pending = (data || []).filter(profile => profile.status === "pending");
+      if (!pending.length) {
+        host.textContent = "Não há solicitações pendentes.";
+        return;
+      }
+
+      pending.forEach(profile => {
+        const row = document.createElement("div");
+        row.className = "user-row";
+        const info = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = profile.full_name || "Nome não informado";
+        const email = document.createElement("div");
+        email.className = "muted small";
+        email.textContent = profile.email;
+        info.append(name, email);
+
+        const actions = document.createElement("div");
+        actions.className = "toolbar";
+        const approve = document.createElement("button");
+        approve.className = "btn-small";
+        approve.textContent = "Aprovar";
+        approve.onclick = () => updateProfileStatus(profile.id, "approved");
+        const reject = document.createElement("button");
+        reject.className = "btn-danger btn-small";
+        reject.textContent = "Rejeitar";
+        reject.onclick = () => updateProfileStatus(profile.id, "rejected");
+        actions.append(approve, reject);
+        row.append(info, actions);
+        host.append(row);
+      });
+    }
+
+    async function updateProfileStatus(profileId, status) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ status })
+        .eq("id", profileId);
+      if (error) {
+        alert("A alteração foi recusada pelo banco: " + error.message);
+        return;
+      }
+      await loadAdminUsers();
+    }
+
+    $("authorizeEmailButton").addEventListener("click", async () => {
+      const email = $("authorizeEmail").value.trim().toLowerCase();
+      const button = $("authorizeEmailButton");
+      const message = $("authorizeEmailMessage");
+
+      if (!email) {
+        messageBox(message, "Informe um e-mail válido.", "error");
+        return;
+      }
+
+      button.disabled = true;
+      messageBox(message, "Registrando a autorização...", "info");
+
+      try {
+        const { error } = await supabase.rpc("authorize_email_access", {
+          p_email: email
+        });
+        if (error) throw error;
+
+        $("authorizeEmail").value = "";
+        messageBox(
+          message,
+          "E-mail autorizado. Uma conta existente foi liberada; se a pessoa ainda não se cadastrou, poderá solicitar acesso usando este endereço.",
+          "success"
+        );
+        await loadAdminUsers();
+      } catch (error) {
+        messageBox(
+          message,
+          "Não foi possível autorizar o e-mail. Confirme se o SQL de autorização prévia por e-mail foi executado no Supabase. " + error.message,
+          "error"
+        );
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    $("saveAiSettings").onclick = () => {
+      state.apiKey = $("geminiKey").value.trim();
+      state.model = $("geminiModel").value.trim() || "gemini-2.5-flash";
+      messageBox($("settingsMessage"), "Configuração aplicada somente nesta sessão.", "success");
+    };
+
+    let selectedImage = null;
+    $("mediaFile").onchange = event => {
+      selectedImage = event.target.files?.[0] || null;
+      if (!selectedImage) return;
+      $("mediaPreview").src = URL.createObjectURL(selectedImage);
+      $("mediaPreview").classList.remove("hidden");
+    };
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    $("analyzeMediaButton").onclick = async () => {
+      if (!selectedImage) return alert("Selecione uma imagem primeiro.");
+      if (!state.apiKey) return alert("Configure a chave Gemini na aba Configurações.");
+      const button = $("analyzeMediaButton");
+      button.disabled = true;
+      $("mediaResult").classList.remove("hidden");
+      $("mediaResult").textContent = "Analisando imagem…";
+      try {
+        const base64 = await fileToBase64(selectedImage);
+        const prompt = $("mediaPrompt").value.trim() ||
+          "Descreva objetivamente os elementos visíveis e informe as limitações da análise.";
+        const response = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/" +
+          encodeURIComponent(state.model) +
+          ":generateContent?key=" + encodeURIComponent(state.apiKey),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: "Analise a imagem com cuidado. Descreva somente o que é possível observar, indique incertezas e não invente conteúdo." }]
+              },
+              contents: [{
+                role: "user",
+                parts: [
+                  { inlineData: { mimeType: selectedImage.type, data: base64 } },
+                  { text: prompt }
+                ]
+              }],
+              generationConfig: { temperature: 0.2 }
+            })
+          }
+        );
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error?.message || "Falha na análise.");
+        $("mediaResult").textContent = (result.candidates?.[0]?.content?.parts || [])
+          .map(part => part.text || "").join("\n") || "A análise não retornou texto.";
+      } catch (error) {
+        $("mediaResult").textContent = "Falha na análise: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    $("copyPromptButton").onclick = async () => {
+      const prompt = $("creationPrompt").value.trim();
+      if (!prompt) return alert("Escreva primeiro a descrição desejada.");
+      try {
+        await navigator.clipboard.writeText(prompt);
+        $("copyPromptButton").textContent = "Prompt copiado";
+        setTimeout(() => $("copyPromptButton").textContent = "Copiar prompt", 1600);
+      } catch {
+        alert("Não foi possível copiar automaticamente. Selecione e copie o texto.");
+      }
+    };
+
+    async function initialize() {
+      if (SUPABASE_URL.includes("SEU-PROJETO") || SUPABASE_ANON_KEY.includes("SUA_CHAVE")) {
+        messageBox(
+          $("authMessage"),
+          "Configure SUPABASE_URL e SUPABASE_ANON_KEY no início do script antes de testar o acesso.",
+          "error"
+        );
+        setStatus("Configuração necessária", true);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        messageBox($("authMessage"), "Falha ao verificar sessão: " + error.message, "error");
+        return;
+      }
+      if (data.session?.user) await displayForUser(data.session.user);
+      else {
+        $("authView").classList.remove("hidden");
+        setStatus("Aguardando acesso");
+      }
+    }
+
+    initialize().catch(error => {
+      messageBox(
+        $("authMessage"),
+        "Falha ao inicializar o acesso: " + error.message,
+        "error"
+      );
+      setStatus("Falha na inicialização", true);
+    });
+  </script>
+</body>
+</html>
